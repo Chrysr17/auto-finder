@@ -11,14 +11,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "categoria")
-public class Categoria {
+@Table(name = "modelo")
+public class Modelo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nombre;
-    private String descripcion;
 
+    @ManyToOne
+    @JoinColumn(name = "marca_id")
+    private Marca marca;
 }
