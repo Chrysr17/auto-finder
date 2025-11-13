@@ -18,6 +18,7 @@ public class Auto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Double precio;
+    private String color;
 
     @Column(name = "año_fabricacion")
     private Integer añoFabricacion;
