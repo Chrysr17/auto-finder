@@ -1,16 +1,15 @@
 package com.example.autofinder.service;
 
-import com.example.autofinder.model.Auto;
+import com.example.autofinder.dto.AutoDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface AutoService {
-    List<Auto> listarTodos();
-    Optional<Auto> buscarPorId(Long id);
-    Auto registrar(Auto auto);
-    Auto actualizar(Long id, Auto auto);
+    List<AutoDTO> listarTodos();
+    AutoDTO buscarPorId(Long id);
+    AutoDTO registrar(AutoDTO autoDto);
+    AutoDTO actualizar(Long id, AutoDTO autoDto);
     void eliminar(Long id);
-    List<Auto> buscarPorMarca(String marca);
-    List<Auto> buscarPorCategoria(String categoria);
+    List<AutoDTO> buscarPorMarca(String marca);
+    List<AutoDTO> buscarPorCategoria(String categoria);
 }

@@ -16,11 +16,11 @@ public interface AutoMapper {
     @Mapping(source = "modelo.nombre", target = "modeloNombre")
     @Mapping(source = "categoria.id", target = "categoriaId")
     @Mapping(source = "categoria.nombre", target = "categoriaNombre")
-    AutoDto toDTO(Auto auto);
+    AutoDTO toDTO(Auto auto);
 
     // DTO → ENTITY (solo para registrar o actualizar)
     @Mapping(target = "marca.id", source = "marcaId")
     @Mapping(target = "modelo.id", source = "modeloId")
     @Mapping(target = "categoria.id", source = "categoriaId")
-    Auto toEntity(AutoDto autoDTO);
+    Auto toEntity(AutoDTO autoDTO);
 }

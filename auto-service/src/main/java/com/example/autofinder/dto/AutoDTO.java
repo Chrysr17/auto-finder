@@ -3,7 +3,7 @@ package com.example.autofinder.dto;
 import lombok.Data;
 
 @Data
-public class AutoDto {
+public class AutoDTO {
     private Long id;
 
     private String color;
