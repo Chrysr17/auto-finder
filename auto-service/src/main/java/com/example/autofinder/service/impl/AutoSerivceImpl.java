@@ -63,11 +63,17 @@ public class AutoSerivceImpl implements AutoService {
 
     @Override
     public List<AutoDTO> buscarPorMarca(String marca) {
-        return List.of();
+        return autoRepositoy.findByMarcaNombre(marca)
+                .stream()
+                .map(autoMapper::toDTO)
+                .toList();
     }
 
     @Override
     public List<AutoDTO> buscarPorCategoria(String categoria) {
-        return List.of();
+        return autoRepositoy.findByCategoriaNombre(categoria)
+                .stream()
+                .map(autoMapper::toDTO)
+                .toList();
     }
 }
