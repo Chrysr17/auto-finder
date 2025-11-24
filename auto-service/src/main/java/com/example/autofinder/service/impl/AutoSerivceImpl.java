@@ -2,6 +2,7 @@ package com.example.autofinder.service.impl;
 
 import com.example.autofinder.dto.AutoDTO;
 import com.example.autofinder.dto.AutoMapper;
+import com.example.autofinder.model.Auto;
 import com.example.autofinder.repository.AutoRepositoy;
 import com.example.autofinder.service.AutoService;
 import org.springframework.stereotype.Service;
@@ -21,17 +22,24 @@ public class AutoSerivceImpl implements AutoService {
 
     @Override
     public List<AutoDTO> listarTodos() {
-        return List.of();
+        return autoRepositoy.findAll()
+                .stream()
+                .map(autoMapper::toDTO)
+                .toList();
     }
 
     @Override
     public AutoDTO buscarPorId(Long id) {
-        return null;
+        return autoRepositoy.findById(id)
+                .map(autoMapper::toDTO)
+                .orElse(null);
     }
 
     @Override
     public AutoDTO registrar(AutoDTO autoDto) {
-        return null;
+        Auto auto = autoMapper.toEntity(autoDto);
+        Auto guardado = autoRepositoy.save(auto);
+        return autoMapper.toDTO(guardado);
     }
 
     @Override
