@@ -21,7 +21,7 @@ public class Auto {
     private String color;
 
     @Column(name = "año_fabricacion")
-    private Integer añoFabricacion;
+    private Integer anioFabricacion;
 
     @ManyToOne
     @JoinColumn(name = "marca_id")

@@ -1,8 +1,10 @@
 package com.example.autofinder.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class AutoDTO {
     private Long id;
 

@@ -1,7 +1,7 @@
 package com.example.autofinder.service.impl;
 
 import com.example.autofinder.dto.AutoDTO;
-import com.example.autofinder.dto.AutoMapper;
+import com.example.autofinder.mapper.AutoMapper;
 import com.example.autofinder.model.Auto;
 import com.example.autofinder.repository.AutoRepositoy;
 import com.example.autofinder.service.AutoService;
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AutoSerivceImpl implements AutoService {
+public class AutoServiceImpl implements AutoService {
 
     private final AutoRepositoy autoRepositoy;
     private final AutoMapper autoMapper;
 
-    public AutoSerivceImpl(AutoRepositoy autoRepositoy, AutoMapper autoMapper) {
+    public AutoServiceImpl(AutoRepositoy autoRepositoy, AutoMapper autoMapper) {
         this.autoRepositoy = autoRepositoy;
         this.autoMapper = autoMapper;
     }
