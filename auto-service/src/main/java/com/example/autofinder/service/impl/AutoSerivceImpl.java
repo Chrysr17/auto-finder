@@ -36,20 +36,29 @@ public class AutoSerivceImpl implements AutoService {
     }
 
     @Override
-    public AutoDTO registrar(AutoDTO autoDto) {
-        Auto auto = autoMapper.toEntity(autoDto);
+    public AutoDTO registrar(AutoDTO autoDTO) {
+        Auto auto = autoMapper.toEntity(autoDTO);
         Auto guardado = autoRepositoy.save(auto);
         return autoMapper.toDTO(guardado);
     }
 
     @Override
-    public AutoDTO actualizar(Long id, AutoDTO autoDto) {
-        return null;
+    public AutoDTO actualizar(Long id, AutoDTO autoDTO) {
+
+        Auto auto = autoRepositoy.findById(id)
+                .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
+
+        Auto actualizado = autoMapper.toEntity(autoDTO);
+        actualizado.setId(id);
+
+        Auto guardado = autoRepositoy.save(actualizado);
+
+        return autoMapper.toDTO(guardado);
     }
 
     @Override
     public void eliminar(Long id) {
-
+        autoRepositoy.deleteById(id);
     }
 
     @Override
