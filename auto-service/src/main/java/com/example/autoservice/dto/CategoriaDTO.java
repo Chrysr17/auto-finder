@@ -1,4 +1,4 @@
-package com.example.autofinder.dto;
+package com.example.autoservice.dto;
 
 import lombok.Data;
 

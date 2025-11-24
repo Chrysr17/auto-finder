@@ -1,4 +1,4 @@
-package com.example.autofinder.model;
+package com.example.autoservice.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

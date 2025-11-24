@@ -1,4 +1,4 @@
-package com.example.autofinder;
+package com.example.autoservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

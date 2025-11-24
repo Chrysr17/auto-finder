@@ -1,10 +1,10 @@
-package com.example.autofinder.service.impl;
+package com.example.autoservice.service.impl;
 
-import com.example.autofinder.dto.AutoDTO;
-import com.example.autofinder.mapper.AutoMapper;
-import com.example.autofinder.model.Auto;
-import com.example.autofinder.repository.AutoRepositoy;
-import com.example.autofinder.service.AutoService;
+import com.example.autoservice.dto.AutoDTO;
+import com.example.autoservice.mapper.AutoMapper;
+import com.example.autoservice.model.Auto;
+import com.example.autoservice.repository.AutoRepositoy;
+import com.example.autoservice.service.AutoService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

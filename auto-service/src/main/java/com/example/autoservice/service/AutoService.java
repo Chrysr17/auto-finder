@@ -1,6 +1,6 @@
-package com.example.autofinder.service;
+package com.example.autoservice.service;
 
-import com.example.autofinder.dto.AutoDTO;
+import com.example.autoservice.dto.AutoDTO;
 
 import java.util.List;
 

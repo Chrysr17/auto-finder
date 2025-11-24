@@ -1,6 +1,6 @@
-package com.example.autofinder.repository;
+package com.example.autoservice.repository;
 
-import com.example.autofinder.model.Marca;
+import com.example.autoservice.model.Marca;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
-package com.example.autofinder.repository;
+package com.example.autoservice.repository;
 
-import com.example.autofinder.model.Auto;
+import com.example.autoservice.model.Auto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
-package com.example.autofinder.controller;
+package com.example.autoservice.controller;
 
-import com.example.autofinder.dto.AutoDTO;
-import com.example.autofinder.service.AutoService;
+import com.example.autoservice.dto.AutoDTO;
+import com.example.autoservice.service.AutoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

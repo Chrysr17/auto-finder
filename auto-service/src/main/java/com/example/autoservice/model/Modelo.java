@@ -1,4 +1,4 @@
-package com.example.autofinder.model;
+package com.example.autoservice.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,14 +11,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "marca")
-public class Marca {
+@Table(name = "modelo")
+public class Modelo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "nombre", nullable = false, unique = true)
     private String nombre;
 
+    @ManyToOne
+    @JoinColumn(name = "marca_id")
+    private Marca marca;
 }

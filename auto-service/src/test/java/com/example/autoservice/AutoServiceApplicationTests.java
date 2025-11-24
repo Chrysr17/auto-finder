@@ -1,4 +1,4 @@
-package com.example.autofinder;
+package com.example.autoservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
