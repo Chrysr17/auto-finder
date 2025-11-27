@@ -33,9 +33,17 @@ public class AutoController {
     }
 
     @PostMapping
-    public ResponseEntity<AutoDTO> resgistrar(@RequestBody AutoDTO autoDTO){
+    public ResponseEntity<AutoDTO> registrar(@RequestBody AutoDTO autoDTO){
         AutoDTO nuevo = autoService.registrar(autoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AutoDTO> actualizar(@PathVariable Long id, @RequestBody AutoDTO autoDTO){
+        AutoDTO actualizado = autoService.actualizar(id, autoDTO);
+        return ResponseEntity.ok(actualizado);
+    }
+
+
 
 }
