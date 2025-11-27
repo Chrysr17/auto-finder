@@ -1,7 +1,6 @@
 package com.example.autoservice.controller;
 
 import com.example.autoservice.dto.AutoDTO;
-import com.example.autoservice.model.Auto;
 import com.example.autoservice.service.AutoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
