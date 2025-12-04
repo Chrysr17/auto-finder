@@ -14,6 +14,7 @@ import java.util.Date;
 public class JwtUtil {
     private final Key key;
 
+
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -22,10 +23,12 @@ public class JwtUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public String getRolesFromToken(String token) {
+    public String getRoleFromToken(String token) {
         Object role = getAllClaims(token).get("role");
         return role != null ? role.toString() : null;
+
     }
+
 
     public boolean isTokenValid(String token) {
         try {
@@ -47,5 +50,6 @@ public class JwtUtil {
     public Date getExpirationDate(String token) {
         return getAllClaims(token).getExpiration();
     }
+
 
 }
