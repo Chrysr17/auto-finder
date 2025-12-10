@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "auto-service", url = "http://localhost:9031")
 public interface AutoClient {
 
-    @GetMapping
+    @GetMapping("/api/autos/{id}")
     AutoDTO obtenerAuto(@PathVariable Long id);
 
 }
