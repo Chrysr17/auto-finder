@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AutoDTO {
+public class AutoResponseDTO {
     private Long id;
 
     private String color;

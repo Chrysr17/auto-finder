@@ -1,6 +1,8 @@
 package com.example.autoservice.service.impl;
 
-import com.example.autoservice.dto.AutoDTO;
+import com.example.autoservice.dto.AutoRequestDTO;
+import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.mapper.AutoMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.repository.AutoRepositoy;
 import com.example.autoservice.repository.CategoriaRepository;
@@ -16,90 +18,78 @@ import java.util.Optional;
 public class AutoServiceImpl implements AutoService {
 
     private final AutoRepositoy autoRepositoy;
-    private final CategoriaRepository categoriaRepository;
     private final MarcaRepository marcaRepository;
     private final ModeloRepository modeloRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final AutoMapper autoMapper;
 
-    public AutoServiceImpl(AutoRepositoy autoRepositoy, CategoriaRepository categoriaRepository, MarcaRepository marcaRepository, ModeloRepository modeloRepository) {
+    public AutoServiceImpl(AutoRepositoy autoRepositoy,
+                           MarcaRepository marcaRepository,
+                           ModeloRepository modeloRepository,
+                           CategoriaRepository categoriaRepository,
+                           AutoMapper autoMapper) {
         this.autoRepositoy = autoRepositoy;
-        this.categoriaRepository = categoriaRepository;
         this.marcaRepository = marcaRepository;
         this.modeloRepository = modeloRepository;
-    }
-
-    private Auto toEntity(AutoDTO dto) {
-        Auto auto = new Auto();
-        auto.setId(dto.getId());
-        auto.setColor(dto.getColor());
-        auto.setPrecio(dto.getPrecio());
-        auto.setAnioFabricacion(dto.getAnioFabricacion());
-
-        // Relaciones (solo por ID)
-        if (dto.getMarcaId() != null) {
-            auto.setMarca(marcaRepository.findById(dto.getMarcaId())
-                    .orElseThrow(() -> new RuntimeException("Marca no existe")));
-        }
-
-        if (dto.getModeloId() != null) {
-            auto.setModelo(modeloRepository.findById(dto.getModeloId())
-                    .orElseThrow(() -> new RuntimeException("Modelo no existe")));
-        }
-
-        if (dto.getCategoriaId() != null) {
-            auto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoria no existe")));
-        }
-
-        return auto;
-    }
-
-    private AutoDTO toDTO(Auto auto) {
-        return AutoDTO.builder()
-                .id(auto.getId())
-                .color(auto.getColor())
-                .precio(auto.getPrecio())
-                .anioFabricacion(auto.getAnioFabricacion())
-
-                .marcaId(auto.getMarca() != null ? auto.getMarca().getId() : null)
-                .modeloId(auto.getModelo() != null ? auto.getModelo().getId() : null)
-                .categoriaId(auto.getCategoria() != null ? auto.getCategoria().getId() : null)
-
-                .marcaNombre(auto.getMarca() != null ? auto.getMarca().getNombre() : null)
-                .modeloNombre(auto.getModelo() != null ? auto.getModelo().getNombre() : null)
-                .categoriaNombre(auto.getCategoria() != null ? auto.getCategoria().getNombre() : null)
-
-                .build();
+        this.categoriaRepository = categoriaRepository;
+        this.autoMapper = autoMapper;
     }
 
     @Override
-    public List<AutoDTO> listarTodos() {
+    public List<AutoResponseDTO> listarTodos() {
         return autoRepositoy.findAll()
                 .stream()
-                .map(this::toDTO)
+                .map(autoMapper::toResponseDTO)
                 .toList();
     }
 
     @Override
-    public Optional<AutoDTO> buscarPorId(Long id) {
-        return autoRepositoy.findById(id).map(this::toDTO);
-    }
-
-    @Override
-    public AutoDTO registrar(AutoDTO autoDTO) {
-        Auto auto = toEntity(autoDTO);
-        Auto guardado = autoRepositoy.save(auto);
-        return toDTO(guardado);
-    }
-
-    @Override
-    public AutoDTO actualizar(Long id, AutoDTO autoDTO) {
+    public Optional<AutoResponseDTO> buscarPorId(Long id) {
         return autoRepositoy.findById(id)
-                .map(autoExistente ->{
-                    Auto auto = toEntity(autoDTO);
-                    auto.setId(id);
-                    return toDTO(autoRepositoy.save(auto));
-                })
+                .map(autoMapper::toResponseDTO);
+    }
+
+    @Override
+    public AutoResponseDTO registrar(AutoRequestDTO dto) {
+        Auto auto = autoMapper.toEntity(dto);
+
+        auto.setMarca(marcaRepository.findById(dto.getMarcaId())
+                .orElseThrow(() -> new RuntimeException("Marca no existe")));
+
+        auto.setModelo(modeloRepository.findById(dto.getModeloId())
+                .orElseThrow(() -> new RuntimeException("Modelo no existe")));
+
+        auto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoria no existe")));
+
+        return autoMapper.toResponseDTO(autoRepositoy.save(auto));
+    }
+
+    @Override
+    public AutoResponseDTO actualizar(Long id, AutoRequestDTO dto) {
+        Auto existente = autoRepositoy.findById(id)
                 .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
+
+        existente.setColor(dto.getColor());
+        existente.setPrecio(dto.getPrecio());
+        existente.setAnioFabricacion(dto.getAnioFabricacion());
+
+        if (dto.getMarcaId() != null) {
+            existente.setMarca(marcaRepository.findById(dto.getMarcaId())
+                    .orElseThrow(() -> new RuntimeException("Marca no existe")));
+        }
+
+        if (dto.getModeloId() != null) {
+            existente.setModelo(modeloRepository.findById(dto.getModeloId())
+                    .orElseThrow(() -> new RuntimeException("Modelo no existe")));
+        }
+
+        if (dto.getCategoriaId() != null) {
+            existente.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("Categoria no existe")));
+        }
+
+        return autoMapper.toResponseDTO(autoRepositoy.save(existente));
     }
 
     @Override
@@ -108,14 +98,18 @@ public class AutoServiceImpl implements AutoService {
     }
 
     @Override
-    public List<AutoDTO> buscarPorMarca(String marca) {
+    public List<AutoResponseDTO> buscarPorMarca(String marca) {
         return autoRepositoy.findByMarcaNombre(marca)
-                .stream().map(this::toDTO).toList();
+                .stream()
+                .map(autoMapper::toResponseDTO)
+                .toList();
     }
 
     @Override
-    public List<AutoDTO> buscarPorCategoria(String categoria) {
+    public List<AutoResponseDTO> buscarPorCategoria(String categoria) {
         return autoRepositoy.findByCategoriaNombre(categoria)
-                .stream().map(this::toDTO).toList();
+                .stream()
+                .map(autoMapper::toResponseDTO)
+                .toList();
     }
 }
