@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface CategoriaService {
      List<CategoriaDTO> listar();
      Optional<CategoriaDTO> buscarPorId(Long id);
+     CategoriaDTO registrar(CategoriaDTO categoriaDTO);
 }
