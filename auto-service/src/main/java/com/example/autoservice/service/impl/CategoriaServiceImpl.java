@@ -2,6 +2,7 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.CategoriaDTO;
 import com.example.autoservice.mapper.CategoriaMapper;
+import com.example.autoservice.model.Categoria;
 import com.example.autoservice.repository.CategoriaRepository;
 import com.example.autoservice.service.CategoriaService;
 import org.springframework.stereotype.Service;
@@ -30,11 +31,13 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public Optional<CategoriaDTO> buscarPorId(Long id) {
-        return Optional.empty();
+        return categoriaRepository.findById(id)
+                .map(categoriaMapper::toDTO);
     }
 
     @Override
     public CategoriaDTO registrar(CategoriaDTO categoriaDTO) {
-        return null;
+        Categoria categoria = categoriaMapper.toEntity(categoriaDTO);
+        return categoriaMapper.toDTO(categoriaRepository.save(categoria));
     }
 }
