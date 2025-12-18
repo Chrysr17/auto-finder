@@ -2,6 +2,7 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.ModeloDTO;
 import com.example.autoservice.mapper.ModeloMapper;
+import com.example.autoservice.model.Modelo;
 import com.example.autoservice.repository.MarcaRepository;
 import com.example.autoservice.repository.ModeloRepository;
 import com.example.autoservice.service.ModeloService;
@@ -25,16 +26,24 @@ public class ModeloServiceImpl implements ModeloService {
 
     @Override
     public List<ModeloDTO> listar() {
-        return List.of();
+        return modeloRepository.findAll()
+                .stream()
+                .map(modeloMapper::toDTO)
+                .toList();
     }
 
     @Override
     public Optional<ModeloDTO> buscarPorId(Long id) {
-        return Optional.empty();
+        return modeloRepository.findById(id)
+                .map(modeloMapper::toDTO);
     }
 
     @Override
     public ModeloDTO registrar(ModeloDTO modeloDTO) {
-        return null;
+        Modelo modelo = modeloMapper.toEntity(modeloDTO);
+        modelo.setMarca(marcaRepository.findById(modeloDTO.getMarcaId())
+                .orElseThrow(() -> new RuntimeException("Marca no encontrada")));
+
+        return modeloMapper.toDTO(modeloRepository.save(modelo));
     }
 }
