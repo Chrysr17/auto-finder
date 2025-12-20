@@ -1,6 +1,7 @@
 package com.example.autoservice.controller;
 
-import com.example.autoservice.dto.CategoriaDTO;
+import com.example.autoservice.dto.CategoriaRequestDTO;
+import com.example.autoservice.dto.CategoriaResponseDTO;
 import com.example.autoservice.service.CategoriaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,21 +20,21 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoriaDTO>> categoria(CategoriaDTO dto) {
-        List<CategoriaDTO> categorias = categoriaService.listar();
+    public ResponseEntity<List<CategoriaResponseDTO>> listar() {
+        List<CategoriaResponseDTO> categorias = categoriaService.listar();
         return ResponseEntity.ok(categorias);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoriaDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<CategoriaResponseDTO> buscarPorId(@PathVariable Long id) {
         return categoriaService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<CategoriaDTO> registar(@RequestBody CategoriaDTO dto) {
-        CategoriaDTO nueva = categoriaService.registrar(dto);
+    public ResponseEntity<CategoriaResponseDTO> registar(@RequestBody CategoriaRequestDTO dto) {
+        CategoriaResponseDTO nueva = categoriaService.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
     }
 

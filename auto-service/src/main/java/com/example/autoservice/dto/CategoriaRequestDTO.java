@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoriaDTO {
-    private Long id;
+public class CategoriaRequestDTO {
     private String nombre;
     private String descripcion;
-
 }

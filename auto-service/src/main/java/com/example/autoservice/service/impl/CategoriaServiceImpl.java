@@ -1,6 +1,7 @@
 package com.example.autoservice.service.impl;
 
-import com.example.autoservice.dto.CategoriaDTO;
+import com.example.autoservice.dto.CategoriaRequestDTO;
+import com.example.autoservice.dto.CategoriaResponseDTO;
 import com.example.autoservice.mapper.CategoriaMapper;
 import com.example.autoservice.model.Categoria;
 import com.example.autoservice.repository.CategoriaRepository;
@@ -22,22 +23,22 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public List<CategoriaDTO> listar() {
+    public List<CategoriaResponseDTO> listar() {
         return categoriaRepository.findAll()
                 .stream()
-                .map(categoriaMapper::toDTO)
+                .map(categoriaMapper::toResponseDTO)
                 .toList();
     }
 
     @Override
-    public Optional<CategoriaDTO> buscarPorId(Long id) {
+    public Optional<CategoriaResponseDTO> buscarPorId(Long id) {
         return categoriaRepository.findById(id)
-                .map(categoriaMapper::toDTO);
+                .map(categoriaMapper::toResponseDTO);
     }
 
     @Override
-    public CategoriaDTO registrar(CategoriaDTO categoriaDTO) {
-        Categoria categoria = categoriaMapper.toEntity(categoriaDTO);
-        return categoriaMapper.toDTO(categoriaRepository.save(categoria));
+    public CategoriaResponseDTO registrar(CategoriaRequestDTO categoriaRequestDTO) {
+        Categoria categoria = categoriaMapper.toEntity(categoriaRequestDTO);
+        return categoriaMapper.toResponseDTO(categoriaRepository.save(categoria));
     }
 }

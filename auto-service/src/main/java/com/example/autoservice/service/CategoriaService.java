@@ -1,12 +1,13 @@
 package com.example.autoservice.service;
 
-import com.example.autoservice.dto.CategoriaDTO;
+import com.example.autoservice.dto.CategoriaRequestDTO;
+import com.example.autoservice.dto.CategoriaResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CategoriaService {
-     List<CategoriaDTO> listar();
-     Optional<CategoriaDTO> buscarPorId(Long id);
-     CategoriaDTO registrar(CategoriaDTO categoriaDTO);
+     List<CategoriaResponseDTO> listar();
+     Optional<CategoriaResponseDTO> buscarPorId(Long id);
+     CategoriaResponseDTO registrar(CategoriaRequestDTO categoriaRequestDTO);
 }

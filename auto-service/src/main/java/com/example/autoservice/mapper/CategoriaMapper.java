@@ -1,13 +1,20 @@
 package com.example.autoservice.mapper;
 
-import com.example.autoservice.dto.CategoriaDTO;
+import com.example.autoservice.dto.CategoriaRequestDTO;
+import com.example.autoservice.dto.CategoriaResponseDTO;
 import com.example.autoservice.model.Categoria;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CategoriaMapper {
 
-    CategoriaDTO toDTO(Categoria categoria);
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "nombre", target = "nombre")
+    @Mapping(source = "descripcion", target = "descripcion")
+    CategoriaResponseDTO toResponseDTO(Categoria categoria);
 
-    Categoria toEntity(CategoriaDTO dto);
+    @Mapping(source = "nombre", target = "nombre")
+    @Mapping(source = "descripcion", target = "descripcion")
+    Categoria toEntity(CategoriaRequestDTO dto);
 }
