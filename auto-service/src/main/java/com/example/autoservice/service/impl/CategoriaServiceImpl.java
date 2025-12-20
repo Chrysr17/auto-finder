@@ -41,4 +41,9 @@ public class CategoriaServiceImpl implements CategoriaService {
         Categoria categoria = categoriaMapper.toEntity(categoriaRequestDTO);
         return categoriaMapper.toResponseDTO(categoriaRepository.save(categoria));
     }
+
+    @Override
+    public CategoriaResponseDTO actualizar(Long id, CategoriaRequestDTO categoriaRequestDTO) {
+        return null;
+    }
 }

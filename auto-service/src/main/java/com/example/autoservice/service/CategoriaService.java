@@ -10,4 +10,5 @@ public interface CategoriaService {
      List<CategoriaResponseDTO> listar();
      Optional<CategoriaResponseDTO> buscarPorId(Long id);
      CategoriaResponseDTO registrar(CategoriaRequestDTO categoriaRequestDTO);
+     CategoriaResponseDTO actualizar(Long id, CategoriaRequestDTO categoriaRequestDTO);
 }
