@@ -33,9 +33,16 @@ public class CategoriaController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoriaResponseDTO> registar(@RequestBody CategoriaRequestDTO dto) {
-        CategoriaResponseDTO nueva = categoriaService.registrar(dto);
+    public ResponseEntity<CategoriaResponseDTO> registar(@RequestBody CategoriaRequestDTO categoriaRequestDTO) {
+        CategoriaResponseDTO nueva = categoriaService.registrar(categoriaRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<CategoriaResponseDTO> actualizar (@PathVariable Long id, @RequestBody CategoriaRequestDTO categoriaRequestDTO) {
+        CategoriaResponseDTO actualizada = categoriaService.actualizar(id, categoriaRequestDTO);
+        return ResponseEntity.ok(actualizada);
+
     }
 
 }
