@@ -9,12 +9,12 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface CategoriaMapper {
 
-    @Mapping(source = "id", target = "id")
-    @Mapping(source = "nombre", target = "nombre")
-    @Mapping(source = "descripcion", target = "descripcion")
+//    @Mapping(source = "id", target = "id")
+//    @Mapping(source = "nombre", target = "nombre")
+//    @Mapping(source = "descripcion", target = "descripcion")
     CategoriaResponseDTO toResponseDTO(Categoria categoria);
 
-    @Mapping(source = "nombre", target = "nombre")
-    @Mapping(source = "descripcion", target = "descripcion")
+//    @Mapping(source = "nombre", target = "nombre")
+//    @Mapping(source = "descripcion", target = "descripcion")
     Categoria toEntity(CategoriaRequestDTO dto);
 }
