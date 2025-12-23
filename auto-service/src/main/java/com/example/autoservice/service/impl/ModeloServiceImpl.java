@@ -1,5 +1,6 @@
 package com.example.autoservice.service.impl;
 
+import com.example.autoservice.dto.ModeloRequestDTO;
 import com.example.autoservice.dto.ModeloResponseDTO;
 import com.example.autoservice.mapper.ModeloMapper;
 import com.example.autoservice.model.Modelo;
@@ -39,9 +40,9 @@ public class ModeloServiceImpl implements ModeloService {
     }
 
     @Override
-    public ModeloResponseDTO registrar(ModeloResponseDTO modeloDTO) {
-        Modelo modelo = modeloMapper.toEntity(modeloDTO);
-        modelo.setMarca(marcaRepository.findById(modeloDTO.getMarcaId())
+    public ModeloResponseDTO registrar(ModeloRequestDTO modeloRequestDTO) {
+        Modelo modelo = modeloMapper.toEntity(modeloRequestDTO);
+        modelo.setMarca(marcaRepository.findById(modeloRequestDTO.getMarcaId())
                 .orElseThrow(() -> new RuntimeException("Marca no encontrada")));
 
         return modeloMapper.toDTO(modeloRepository.save(modelo));

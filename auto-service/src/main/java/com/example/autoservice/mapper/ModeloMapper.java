@@ -1,5 +1,6 @@
 package com.example.autoservice.mapper;
 
+import com.example.autoservice.dto.ModeloRequestDTO;
 import com.example.autoservice.dto.ModeloResponseDTO;
 import com.example.autoservice.model.Modelo;
 import org.mapstruct.Mapper;
@@ -12,5 +13,5 @@ public interface ModeloMapper {
     @Mapping(source = "marca.nombre", target = "marcaNombre")
     ModeloResponseDTO toDTO(Modelo modelo);
 
-    Modelo toEntity(ModeloResponseDTO dto);
+    Modelo toEntity(ModeloRequestDTO dto);
 }
