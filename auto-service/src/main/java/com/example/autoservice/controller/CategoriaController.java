@@ -33,7 +33,7 @@ public class CategoriaController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoriaResponseDTO> registar(@RequestBody CategoriaRequestDTO categoriaRequestDTO) {
+    public ResponseEntity<CategoriaResponseDTO> registrar(@RequestBody CategoriaRequestDTO categoriaRequestDTO) {
         CategoriaResponseDTO nueva = categoriaService.registrar(categoriaRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
     }
