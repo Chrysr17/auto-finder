@@ -3,6 +3,8 @@ package com.example.autoservice.controller;
 import com.example.autoservice.dto.ModeloResponseDTO;
 import com.example.autoservice.service.ModeloService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +24,13 @@ public class ModeloController {
     private ResponseEntity<List<ModeloResponseDTO>> listar(){
         List<ModeloResponseDTO> modelos = modeloService.listar();
         return ResponseEntity.ok(modelos);
+    }
+
+    @GetMapping("/{id}")
+    private ResponseEntity<ModeloResponseDTO> buscarPorId(@PathVariable Long id){
+        return modeloService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 }
