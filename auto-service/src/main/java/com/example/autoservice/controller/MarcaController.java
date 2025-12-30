@@ -33,7 +33,7 @@ public class MarcaController {
     }
 
     @PostMapping
-    public ResponseEntity<MarcaResponseDTO> registrar(MarcaRequestDTO marcaRequestDTO){
+    public ResponseEntity<MarcaResponseDTO> registrar(@RequestBody MarcaRequestDTO marcaRequestDTO){
         MarcaResponseDTO nueva =  marcaService.registrar(marcaRequestDTO);
         return  ResponseEntity.status(HttpStatus.CREATED).body(nueva);
     }
