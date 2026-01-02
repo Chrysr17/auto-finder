@@ -18,7 +18,8 @@ public class ComparadorController {
         this.comparadorService = comparadorService;
     }
 
-    public ResponseEntity<ComparacionDTO> comprar(
+    @PostMapping
+    public ResponseEntity<ComparacionDTO> comparar(
             @RequestParam(required = false, defaultValue = "general") String criterio,
             @RequestBody List<Long> ids
             ){
