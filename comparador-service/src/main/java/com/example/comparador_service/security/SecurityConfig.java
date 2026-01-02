@@ -22,6 +22,7 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtUtil);
     }
 
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(csrf -> csrf.disable())
@@ -36,7 +37,7 @@ public class SecurityConfig {
                                 "/actuator/health"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/api/comparar/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers( "/api/comparar/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
