@@ -41,7 +41,7 @@ public class ComparadorServiceImpl implements ComparadorService {
         }
 
         // 2) mapear a DTO resumido (solo lo que quieres devolver)
-        List<AutoComparadoDTO> salida = autos.stream()
+        List<AutoComparadoDTO> comparados = autos.stream()
                 .map(a -> AutoComparadoDTO.builder()
                         .id(a.getId())
                         .marcaNombre(a.getMarcaNombre())
@@ -52,7 +52,7 @@ public class ComparadorServiceImpl implements ComparadorService {
                 .toList();
 
         return ComparacionDTO.builder()
-                .autosComparados(autos)
+                .autosComparados(comparados)
                 .criterio(criterio)
                 .build();
     }

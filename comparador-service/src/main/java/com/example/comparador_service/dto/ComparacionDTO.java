@@ -14,7 +14,7 @@ import java.util.List;
 public class ComparacionDTO {
 
     private String criterio;
-    private List<AutoDTO> autosComparados;
+    private List<AutoComparadoDTO> autosComparados;
 
 
 }
