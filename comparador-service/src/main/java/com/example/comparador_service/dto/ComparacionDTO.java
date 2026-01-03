@@ -13,7 +13,8 @@ import java.util.List;
 @Builder
 public class ComparacionDTO {
 
+    private String criterio;
     private List<AutoDTO> autosComparados;
 
-    private String criterio;
+
 }
