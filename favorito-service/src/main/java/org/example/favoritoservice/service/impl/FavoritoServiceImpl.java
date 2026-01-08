@@ -8,6 +8,7 @@ import org.example.favoritoservice.repository.FavoritoRepository;
 import org.example.favoritoservice.service.FavoritoService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,26 +34,42 @@ public class FavoritoServiceImpl implements FavoritoService {
     public FavoritoDTO agregarFavorito(String usarname, Long autoId) {
 
         AutoDTO auto = autoClient.obtenerAuto(autoId);
-        if(auto == null ){
-
+        if(auto == null || auto.getId() == null) {
+            throw new RuntimeException("No se encontro el auto");
         }
 
-        return null;
+        if (favoritoRepository.existsByUsernameAndAutoId(usarname, autoId)){
+            throw new RuntimeException("Ya está en favoritos");
+        }
+
+        Favorito favorito = Favorito.builder()
+                .username(usarname)
+                .autoId(autoId)
+                .fechaCreacion(LocalDateTime.now())
+                .build();
+
+        return toDTO(favoritoRepository.save(favorito));
     }
 
     @Override
     public void eliminarFavorito(String username, Long autoId) {
-
+        favoritoRepository.deleteByUsernameAndAutoId(username, autoId);
     }
 
     @Override
     public List<FavoritoDTO> listarFavoritos(String username) {
-        return List.of();
+        return favoritoRepository.findByUsernameOrderByFechaCreacionDesc(username)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
     @Override
     public List<AutoDTO> listarFavoritosConDetalle(String username) {
-        return List.of();
+        return favoritoRepository.findByUsernameOrderByFechaCreacionDesc(username)
+                .stream()
+                .map(f -> autoClient.obtenerAuto(f.getAutoId()))
+                .toList();
     }
 
 }
