@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface FavoritoService {
 
-    FavoritoDTO agregarFavorito(FavoritoDTO favoritoDTO);
+    FavoritoDTO agregarFavorito(String usarname, Long autoId);
     void eliminarFavorito(String username, Long autoId);
     List<FavoritoDTO> listarFavoritos(String username);
     List<AutoDTO> listarFavoritosConDetalle(String username);
