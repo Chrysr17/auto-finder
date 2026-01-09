@@ -1,5 +1,6 @@
 package org.example.favoritoservice.controller;
 
+import org.example.favoritoservice.dto.AutoDTO;
 import org.example.favoritoservice.dto.FavoritoDTO;
 import org.example.favoritoservice.service.FavoritoService;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,12 @@ public class FavoritoController {
 
     private String username(Authentication authentication){
         return authentication.getName();
+    }
+
+    @GetMapping("/detalle")
+    public ResponseEntity<List<AutoDTO>> listarAutosFavoritos(Authentication authentication){
+        List<AutoDTO> autosFavoritos = favoritoService.listarFavoritosConDetalle(authentication.getName());
+        return ResponseEntity.ok(autosFavoritos);
     }
 
     @GetMapping
