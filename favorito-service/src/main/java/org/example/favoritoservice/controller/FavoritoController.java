@@ -45,7 +45,7 @@ public class FavoritoController {
     @DeleteMapping("/{autoId}")
     public ResponseEntity<Void> eliminar(@PathVariable Long autoId, Authentication authentication){
         favoritoService.eliminarFavorito(username(authentication), autoId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
 }
