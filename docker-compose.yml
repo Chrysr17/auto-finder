@@ -1,0 +1,175 @@
+version: "3.9"
+
+name: autofinder
+
+services:
+  # -------------------------
+  # MYSQL: auth_db
+  # -------------------------
+  mysql-auth:
+    image: mysql:8.0
+    container_name: mysql-auth
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_auth_data:/var/lib/mysql
+    networks:
+      - autofinder-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # -------------------------
+  # MYSQL: autos_db
+  # -------------------------
+  mysql-autos:
+    image: mysql:8.0
+    container_name: mysql-autos
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: autos_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_autos_data:/var/lib/mysql
+    networks:
+      - autofinder-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # -------------------------
+  # MYSQL: favoritos_db
+  # -------------------------
+  mysql-favoritos:
+    image: mysql:8.0
+    container_name: mysql-favoritos
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: favoritos_db
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql_favoritos_data:/var/lib/mysql
+    networks:
+      - autofinder-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # -------------------------
+  # AUTH-SERVICE (9030)
+  # -------------------------
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "9030:9030"
+    environment:
+      SERVER_PORT: 9030
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-auth:3306/auth_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      # IMPORTANTE: mismo secreto en todos los servicios
+      JWT_SECRET: MI_SECRETO_SUPER_SEGURO_CAMBIAR
+    depends_on:
+      mysql-auth:
+        condition: service_healthy
+    networks:
+      - autofinder-net
+
+  # -------------------------
+  # AUTO-SERVICE (9031)
+  # -------------------------
+  auto-service:
+    build:
+      context: ./auto-service
+      dockerfile: Dockerfile
+    container_name: auto-service
+    ports:
+      - "9031:9031"
+    environment:
+      SERVER_PORT: 9031
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-autos:3306/autos_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      JWT_SECRET: MI_SECRETO_SUPER_SEGURO_CAMBIAR
+    depends_on:
+      mysql-autos:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - autofinder-net
+
+  # -------------------------
+  # COMPARADOR-SERVICE (9032) - sin BD
+  # -------------------------
+  comparador-service:
+    build:
+      context: ./comparador-service
+      dockerfile: Dockerfile
+    container_name: comparador-service
+    ports:
+      - "9032:9032"
+    environment:
+      SERVER_PORT: 9032
+      JWT_SECRET: MI_SECRETO_SUPER_SEGURO_CAMBIAR
+      # URL interna para Feign (dentro de la red docker)
+      AUTO_SERVICE_URL: http://auto-service:9031
+    depends_on:
+      auto-service:
+        condition: service_started
+    networks:
+      - autofinder-net
+
+  # -------------------------
+  # FAVORITO-SERVICE (9033)
+  # -------------------------
+  favorito-service:
+    build:
+      context: ./favorito-service
+      dockerfile: Dockerfile
+    container_name: favorito-service
+    ports:
+      - "9033:9033"
+    environment:
+      SERVER_PORT: 9033
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-favoritos:3306/favoritos_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      JWT_SECRET: MI_SECRETO_SUPER_SEGURO_CAMBIAR
+      AUTO_SERVICE_URL: http://auto-service:9031
+    depends_on:
+      mysql-favoritos:
+        condition: service_healthy
+      auto-service:
+        condition: service_started
+    networks:
+      - autofinder-net
+
+networks:
+  autofinder-net:
+    driver: bridge
+
+volumes:
+  mysql_auth_data:
+  mysql_autos_data:
+  mysql_favoritos_data:
