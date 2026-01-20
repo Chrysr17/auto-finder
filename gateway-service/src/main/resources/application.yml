@@ -2,7 +2,7 @@ server:
   port: 9000
 
 jwt:
-  secret: MI_SECRETO_SUPER_SEGURO_CAMBIAR
+  key: "my-super-secure-64chars-secret-key-9876543210987654321098765432109876"
 
 spring:
   application:
