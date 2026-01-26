@@ -150,7 +150,7 @@ services:
     container_name: favorito-service
     environment:
       SERVER_PORT: 9033
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-favoritos:3306/favoritos_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-favoritos:3306/fav_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
