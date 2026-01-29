@@ -2,7 +2,7 @@ server:
   port: 9000
 
 jwt:
-  secret: "my-super-secure-64chars-secret-key-9876543210987654321098765432109876"
+  secret: ${JWT_SECRET}
 
 spring:
   application:
@@ -17,7 +17,7 @@ spring:
       routes:
         # Auth (sin token)
         - id: auth-service
-          uri: http://localhost:9030
+          uri: ${AUTH_SERVICE_URL}
           predicates:
             - Path=/api/auth/**
           filters:
@@ -25,7 +25,7 @@ spring:
 
         # Auto (protegido)
         - id: auto-service
-          uri: http://localhost:9031
+          uri: ${AUTO_SERVICE_URL}
           predicates:
             - Path=/api/autos/**
           filters:
@@ -33,7 +33,7 @@ spring:
 
         # Comparador (protegido)
         - id: comparador-service
-          uri: http://localhost:9032
+          uri: ${COMPARAR_SERVICE_URL}
           predicates:
             - Path=/api/comparar/**
           filters:
@@ -41,7 +41,7 @@ spring:
 
         # Favoritos (protegido)
         - id: favorito-service
-          uri: http://localhost:9033
+          uri: ${FAVORITO_SERVICE_URL}
           predicates:
             - Path=/api/favoritos/**
           filters:
