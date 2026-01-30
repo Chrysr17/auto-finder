@@ -33,7 +33,7 @@ spring:
 
         # Comparador (protegido)
         - id: comparador-service
-          uri: ${COMPARAR_SERVICE_URL}
+          uri: ${COMPARARDOR_SERVICE_URL}
           predicates:
             - Path=/api/comparar/**
           filters:
