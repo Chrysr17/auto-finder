@@ -82,15 +82,17 @@ services:
     build:
       context: ./auth-service
     container_name: auth-service
+    env_file:
+      - .env
     environment:
-      SERVER_PORT: 9030
+      SERVER_PORT: ${AUTH_PORT}
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-auth:3306/auth_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "9030:9030"
+      - "${AUTH_PORT}:${AUTH_PORT}"
     depends_on:
       mysql-auth:
         condition: service_healthy
@@ -104,15 +106,17 @@ services:
     build:
       context: ./auto-service
     container_name: auto-service
+    env_file:
+      - .env
     environment:
-      SERVER_PORT: 9031
+      SERVER_PORT: ${AUTO_PORT}
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-autos:3306/autos_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "9031:9031"
+      - "${AUTO_PORT}:${AUTO_PORT}"
     depends_on:
       mysql-autos:
         condition: service_healthy
@@ -128,13 +132,15 @@ services:
     build:
       context: ./comparador-service
     container_name: comparador-service
+    env_file:
+      - .env
     environment:
-      SERVER_PORT: 9032
+      SERVER_PORT: ${COMPARADOR_PORT}
       JWT_SECRET: ${JWT_SECRET}
       # importante: apunta al auto-service por nombre de contenedor
-      AUTO_SERVICE_URL: http://auto-service:9031
+      AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
     ports:
-      - "9032:9032"
+      - "${COMPARADOR_PORT}:${COMPARADOR_PORT}"
     depends_on:
       auto-service:
         condition: service_started
@@ -148,16 +154,18 @@ services:
     build:
       context: ./favorito-service
     container_name: favorito-service
+    env_file:
+      - .env
     environment:
-      SERVER_PORT: 9033
+      SERVER_PORT: ${FAVORITO_PORT}
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-favoritos:3306/fav_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       JWT_SECRET: ${JWT_SECRET}
-      AUTO_SERVICE_URL: http://auto-service:9031
+      AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
     ports:
-      - "9033:9033"
+      - "${FAVORITO_PORT}:${FAVORITO_PORT}"
     depends_on:
       mysql-favoritos:
         condition: service_healthy
@@ -172,16 +180,18 @@ services:
   gateway-service:
     build:
       context: ./gateway-service
-    container_name: gateway-service
+    container_name: gateway-serviceE
+    env_file:
+      - .env
     environment:
-      SERVER_PORT: 9000
+      SERVER_PORT: ${GATEWAY_PORT}
       JWT_SECRET: ${JWT_SECRET}
-      AUTH_SERVICE_URL: http://auth-service:9030
-      AUTO_SERVICE_URL: http://auto-service:9031
-      COMPARADOR_SERVICE_URL: http://comparador-service:9032
-      FAVORITO_SERVICE_URL: http://favorito-service:9033
+      AUTH_SERVICE_URL: http://auth-service:${AUTH_PORT}
+      AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
+      COMPARADOR_SERVICE_URL: http://comparador-service:${COMPARADOR_PORT}
+      FAVORITO_SERVICE_URL: http://favorito-service:${FAVORITO_PORT}
     ports:
-      - "9000:9000"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     depends_on:
       auth-service:
         condition: service_started
