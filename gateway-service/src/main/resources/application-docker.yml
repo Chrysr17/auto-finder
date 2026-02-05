@@ -1,0 +1,39 @@
+server:
+  port: ${GATEWAY_PORT}
+
+AUTH_SERVICE_URL: http://auth-service:${AUTH_PORT}
+AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
+COMPARADOR_SERVICE_URL: http://comparador-service:${COMPARADOR_PORT}
+FAVORITO_SERVICE_URL: http://favorito-service:${FAVORITO_PORT}
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL}
+          predicates:
+            - Path=/api/auth/**
+        # Auto (protegido)
+        - id: auto-service
+          uri: ${AUTO_SERVICE_URL}
+          predicates:
+            - Path=/api/autos/**
+          filters:
+            - StripPrefix=0
+
+        # Comparador (protegido)
+        - id: comparador-service
+          uri: ${COMPARADOR_SERVICE_URL}
+          predicates:
+            - Path=/api/comparar/**
+          filters:
+            - StripPrefix=0
+
+        # Favoritos (protegido)
+        - id: favorito-service
+          uri: ${FAVORITO_SERVICE_URL}
+          predicates:
+            - Path=/api/favoritos/**
+          filters:
+            - StripPrefix=0
