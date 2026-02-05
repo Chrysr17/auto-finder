@@ -12,9 +12,6 @@ volumes:
   mysql_favoritos_data:
 
 services:
-  # -------------------------
-  # MYSQL: AUTH
-  # -------------------------
   mysql-auth:
     image: mysql:8.0
     container_name: mysql-auth
@@ -33,9 +30,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # -------------------------
-  # MYSQL: AUTOS
-  # -------------------------
   mysql-autos:
     image: mysql:8.0
     container_name: mysql-autos
@@ -54,9 +48,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # -------------------------
-  # MYSQL: FAVORITOS
-  # -------------------------
   mysql-favoritos:
     image: mysql:8.0
     container_name: mysql-favoritos
@@ -75,9 +66,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # -------------------------
-  # AUTH-SERVICE
-  # -------------------------
   auth-service:
     build:
       context: ./auth-service
@@ -85,11 +73,7 @@ services:
     env_file:
       - .env
     environment:
-      SERVER_PORT: ${AUTH_PORT}
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-auth:3306/auth_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
     ports:
       - "${AUTH_PORT}:${AUTH_PORT}"
@@ -99,9 +83,6 @@ services:
     networks:
       - autofinder-net
 
-  # -------------------------
-  # AUTO-SERVICE
-  # -------------------------
   auto-service:
     build:
       context: ./auto-service
@@ -109,11 +90,7 @@ services:
     env_file:
       - .env
     environment:
-      SERVER_PORT: ${AUTO_PORT}
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-autos:3306/autos_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
     ports:
       - "${AUTO_PORT}:${AUTO_PORT}"
@@ -125,9 +102,6 @@ services:
     networks:
       - autofinder-net
 
-  # -------------------------
-  # COMPARADOR-SERVICE
-  # -------------------------
   comparador-service:
     build:
       context: ./comparador-service
@@ -135,10 +109,8 @@ services:
     env_file:
       - .env
     environment:
-      SERVER_PORT: ${COMPARADOR_PORT}
+      SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
-      # importante: apunta al auto-service por nombre de contenedor
-      AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
     ports:
       - "${COMPARADOR_PORT}:${COMPARADOR_PORT}"
     depends_on:
@@ -147,9 +119,6 @@ services:
     networks:
       - autofinder-net
 
-  # -------------------------
-  # FAVORITO-SERVICE
-  # -------------------------
   favorito-service:
     build:
       context: ./favorito-service
@@ -157,13 +126,8 @@ services:
     env_file:
       - .env
     environment:
-      SERVER_PORT: ${FAVORITO_PORT}
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-favoritos:3306/fav_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
-      AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
     ports:
       - "${FAVORITO_PORT}:${FAVORITO_PORT}"
     depends_on:
@@ -174,22 +138,15 @@ services:
     networks:
       - autofinder-net
 
-  # -------------------------
-  # GATEWAY-SERVICE
-  # -------------------------
   gateway-service:
     build:
       context: ./gateway-service
-    container_name: gateway-serviceE
+    container_name: gateway-service
     env_file:
       - .env
     environment:
-      SERVER_PORT: ${GATEWAY_PORT}
+      SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
-      AUTH_SERVICE_URL: http://auth-service:${AUTH_PORT}
-      AUTO_SERVICE_URL: http://auto-service:${AUTO_PORT}
-      COMPARADOR_SERVICE_URL: http://comparador-service:${COMPARADOR_PORT}
-      FAVORITO_SERVICE_URL: http://favorito-service:${FAVORITO_PORT}
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     depends_on:
