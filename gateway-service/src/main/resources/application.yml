@@ -1,48 +1,6 @@
-server:
-  port: ${GATEWAY_PORT:9000}
-
 jwt:
   secret: ${JWT_SECRET}
 
 spring:
   application:
     name: gateway-service
-
-  cloud:
-    gateway:
-      default-filters:
-        # (Opcional) Agrega headers comunes
-        - AddResponseHeader=X-Gateway, AutoFinder
-
-      routes:
-        # Auth (sin token)
-        - id: auth-service
-          uri: ${AUTH_SERVICE_URL}
-          predicates:
-            - Path=/api/auth/**
-          filters:
-            - StripPrefix=0
-
-        # Auto (protegido)
-        - id: auto-service
-          uri: ${AUTO_SERVICE_URL}
-          predicates:
-            - Path=/api/autos/**
-          filters:
-            - StripPrefix=0
-
-        # Comparador (protegido)
-        - id: comparador-service
-          uri: ${COMPARADOR_SERVICE_URL}
-          predicates:
-            - Path=/api/comparar/**
-          filters:
-            - StripPrefix=0
-
-        # Favoritos (protegido)
-        - id: favorito-service
-          uri: ${FAVORITO_SERVICE_URL}
-          predicates:
-            - Path=/api/favoritos/**
-          filters:
-            - StripPrefix=0
