@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -34,5 +37,8 @@ public class Auto {
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
+
+    @OneToMany(mappedBy = "auto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AutoImagen> imagenes = new ArrayList<>() ;
 
 }
