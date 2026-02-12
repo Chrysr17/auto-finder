@@ -2,7 +2,6 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.AutoImagenRequestDTO;
 import com.example.autoservice.dto.AutoImagenResponseDTO;
-import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.mapper.AutoImagenMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.model.AutoImagen;
@@ -28,14 +27,16 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
 
     @Override
-    public AutoResponseDTO agregarImagen(Long autoId, AutoImagenRequestDTO requestDTO) {
+    public AutoImagenResponseDTO agregarImagen(Long autoId, AutoImagenRequestDTO requestDTO) {
         Auto auto = autoRepositoy.findById(autoId)
                 .orElseThrow(()-> new RuntimeException("No se encontro el auto: " +  autoId));
         if (autoImagenRepository.existsByAutoIdAndOrden(autoId, requestDTO.getOrden())){
             throw new RuntimeException("Ya existe una imagen con el orden: " +  requestDTO.getOrden());
         }
         AutoImagen imagen = autoImagenMapper.toEntity(requestDTO);
-        return null;
+        imagen.setAuto(auto);
+        AutoImagen guardada = autoImagenRepository.save(imagen);
+        return autoImagenMapper.toResponseDTO(guardada);
     }
 
     @Override
