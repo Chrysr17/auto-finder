@@ -41,7 +41,14 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public List<AutoImagenResponseDTO> listarImagenes(Long autoId) {
-        return List.of();
+
+        if (!autoRepositoy.existsById(autoId)){
+            throw new RuntimeException("No se encontro el auto con id: " +  autoId);
+        }
+        return autoImagenRepository.findByAutoIdOrderByOrdenAsc(autoId)
+                .stream()
+                .map(autoImagenMapper::toResponseDTO)
+                .toList();
     }
 
     @Override
