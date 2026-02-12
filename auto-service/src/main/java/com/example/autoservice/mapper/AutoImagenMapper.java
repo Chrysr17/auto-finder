@@ -8,5 +8,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AutoImagenMapper {
     AutoImagenResponseDTO toResponseDTO(AutoImagen autoImagen);
-    AutoImagen toEntityDTO(AutoImagenRequestDTO dto);
+    AutoImagen toEntity(AutoImagenRequestDTO dto);
 }
