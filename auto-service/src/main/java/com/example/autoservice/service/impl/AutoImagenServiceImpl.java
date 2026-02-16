@@ -53,7 +53,22 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public AutoImagenResponseDTO editarImagen(Long imagenid, AutoImagenRequestDTO requestDTO) {
-        return null;
+
+        AutoImagen imagen = autoImagenRepository.findById(imagenid)
+                .orElseThrow(()-> new RuntimeException("Imagen no encontrada con id: " + imagenid));
+
+        Long autoId = imagen.getAuto().getId();
+
+        if(!imagen.getOrden().equals(requestDTO.getOrden())
+                && autoImagenRepository.existsByAutoIdAndOrden(autoId, requestDTO.getOrden())){
+            throw new RuntimeException("Ya existe una imagen con el orden" + requestDTO.getOrden());
+        }
+
+        imagen.setUrl(requestDTO.getUrl());
+        imagen.setOrden((requestDTO.getOrden()));
+
+        AutoImagen actualizada = autoImagenRepository.save(imagen);
+        return autoImagenMapper.toResponseDTO(actualizada);
     }
 
     @Override
