@@ -73,7 +73,9 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public void eliminarImagen(Long imagenid) {
-
+        AutoImagen imagen = autoImagenRepository.findById(imagenid)
+                .orElseThrow(()->new RuntimeException("Imagen no encotrada"));
+        autoImagenRepository.deleteById(imagenid);
     }
 
     @Override
