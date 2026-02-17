@@ -11,5 +11,5 @@ public interface AutoImagenService {
     AutoImagenResponseDTO editarImagen(Long imagenid, AutoImagenRequestDTO requestDTO);
     void eliminarImagen(Long imagenid);
     void establecerComoPortada(Long autoId, Long imagenid);
-    String obtenerPortada(long autoId);
+    String obtenerPortada(Long autoId);
 }

@@ -80,11 +80,55 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public void establecerComoPortada(Long autoId, Long imagenid) {
+        Auto auto = autoRepositoy.findById(autoId)
+                .orElseThrow(()-> new RuntimeException("Auto no encontrado con id: " + autoId));
+
+        AutoImagen nuevaPortada = autoImagenRepository.findById(imagenid)
+                .orElseThrow(()-> new RuntimeException("Imagen no encontrada con id: " + imagenid));
+
+        if (!nuevaPortada.getAuto().getId().equals(auto.getId())){
+            throw new RuntimeException("La imagen no pertenece a este auto");
+        }
+
+        if (nuevaPortada.getOrden() != null && nuevaPortada.getOrden() == 1){
+            return;
+        }
+
+        List<AutoImagen> imagenes = autoImagenRepository.findByAutoIdOrderByOrdenAsc(autoId);
+
+        AutoImagen portadaActual = imagenes.stream()
+                .filter(img -> img.getOrden() !=null && img.getOrden() == 1)
+                .findFirst()
+                .orElse(null);
+
+        Integer ordenOriginalNueva = nuevaPortada.getOrden();
+
+        nuevaPortada.setOrden(1);
+        autoImagenRepository.save(nuevaPortada);
+
+        if(portadaActual != null){
+
+            int ordenParaPortadaAnterior = (ordenOriginalNueva != null)
+                    ? ordenOriginalNueva
+                    : Math.max(2, imagenes.size() + 1);
+
+            portadaActual.setOrden(ordenParaPortadaAnterior);
+            autoImagenRepository.save(portadaActual);
+        }
 
     }
 
     @Override
-    public String obtenerPortada(long autoId) {
-        return "";
+    public String obtenerPortada(Long autoId) {
+
+        if (!autoRepositoy.existsById(autoId)){
+            throw new RuntimeException("Auto no encontrado con id: " + autoId);
+        }
+        return autoImagenRepository.findByAutoIdOrderByOrdenAsc(autoId)
+                .stream()
+                .filter(img -> img.getOrden() != null && img.getOrden() == 1)
+                .map(AutoImagen::getUrl)
+                .findFirst()
+                .orElse(null);
     }
 }
