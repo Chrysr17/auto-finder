@@ -35,4 +35,10 @@ public class AutoImagenController {
         return ResponseEntity.ok(autoImagenService.editarImagen(imagenId, request));
     }
 
+    @DeleteMapping("/imagenes/{imagenId}")
+    public ResponseEntity<Void> eliminarImagen(@PathVariable Long imagenId){
+        autoImagenService.eliminarImagen(imagenId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
