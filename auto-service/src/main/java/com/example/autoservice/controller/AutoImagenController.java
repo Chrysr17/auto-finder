@@ -47,4 +47,9 @@ public class AutoImagenController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/autoId")
+    public ResponseEntity<String> obtenerPortada(@PathVariable Long autoId){
+        String url = autoImagenService.obtenerPortada(autoId);
+        return ResponseEntity.ok(url);
+    }
 }
