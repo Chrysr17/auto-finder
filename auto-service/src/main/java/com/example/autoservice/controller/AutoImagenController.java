@@ -30,12 +30,9 @@ public class AutoImagenController {
         AutoImagenResponseDTO creada = autoImagenService.agregarImagen(autoId, requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
-
-    @PutMapping("/{autoId}/imagenes/{imagenId}/portada")
-    public ResponseEntity<Void> establecerComoPortada(@PathVariable Long autoId, @PathVariable Long imagenId) {
-        autoImagenService.establecerComoPortada(autoId, imagenId);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/imagenes/{imagenId}")
+    public ResponseEntity<AutoImagenResponseDTO> actualizarImagen(@PathVariable Long imagenId, @Valid @RequestBody AutoImagenRequestDTO request) {
+        return ResponseEntity.ok(autoImagenService.editarImagen(imagenId, request));
     }
-
 
 }
