@@ -41,4 +41,10 @@ public class AutoImagenController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/autoId/imagenes/{}")
+    public ResponseEntity<Void> establecerPortada(@PathVariable Long autoId, @PathVariable Long imagenId){
+        autoImagenService.establecerComoPortada(autoId, imagenId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
