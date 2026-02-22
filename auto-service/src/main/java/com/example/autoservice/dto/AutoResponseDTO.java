@@ -24,4 +24,7 @@ public class AutoResponseDTO {
 
     private Long categoriaId;
     private String categoriaNombre;
+
+    private String imagenPortadaUrl;
+
 }
