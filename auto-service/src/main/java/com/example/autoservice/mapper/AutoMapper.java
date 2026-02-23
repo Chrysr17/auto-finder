@@ -1,16 +1,11 @@
 package com.example.autoservice.mapper;
 
-import com.example.autoservice.dto.AutoDetalleResponseDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.model.Auto;
-import com.example.autoservice.model.AutoImagen;
 import com.example.autoservice.projection.AutoListadoProjection;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface AutoMapper {
