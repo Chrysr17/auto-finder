@@ -30,14 +30,9 @@ public interface AutoMapper {
     @Mapping(source = "categoria.nombre", target = "categoriaNombre")
     AutoResponseDTO toResponseDTO(Auto auto);
 
-    @Mapping(source = "marca.id", target = "marcaId")
-    @Mapping(source = "marca.nombre", target = "marcaNombre")
-    @Mapping(source = "modelo.id", target = "modeloId")
-    @Mapping(source = "modelo.nombre", target = "modeloNombre")
-    @Mapping(source = "categoria.id", target = "categoriaId")
-    @Mapping(source = "categoria.nombre", target = "categoriaNombre")
-    @Mapping(source = "imagenes", target = "imagenes")
-
+    @Mapping(source = "marcaId", target = "marca.id")
+    @Mapping(source = "modeloId", target = "modelo.id")
+    @Mapping(source = "categoriaId", target = "categoria.id")
     Auto toEntity(AutoRequestDTO dto);
 
     @Mapping(source = "anioFabricacion", target = "anioFabricacion")
