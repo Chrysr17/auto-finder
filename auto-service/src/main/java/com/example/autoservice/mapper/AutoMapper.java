@@ -5,6 +5,7 @@ import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.model.AutoImagen;
+import com.example.autoservice.projection.AutoListadoProjection;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -36,18 +37,12 @@ public interface AutoMapper {
     @Mapping(source = "categoria.id", target = "categoriaId")
     @Mapping(source = "categoria.nombre", target = "categoriaNombre")
     @Mapping(source = "imagenes", target = "imagenes")
-    AutoDetalleResponseDTO toDetalleResponseDTO(Auto auto);
 
     Auto toEntity(AutoRequestDTO dto);
 
-    @Named("obtenerPortaladaUrl")
-    default String obtenerPortadaUrl(List<AutoImagen> imagenes){
-        if (imagenes == null || imagenes.isEmpty()) return null;
-        return  imagenes.stream()
-                .filter(img -> img.getOrden() != null && img.getOrden() == 1)
-                .map(AutoImagen::getUrl)
-                .findFirst()
-                .orElse(null);
-    }
+    @Mapping(source = "anioFabricacion", target = "anioFabricacion")
+    @Mapping(source = "imagenPortadaUrl", target = "imagenPortadaUrl")
+    AutoResponseDTO toResponseDTO(AutoListadoProjection p);
+
 
 }
