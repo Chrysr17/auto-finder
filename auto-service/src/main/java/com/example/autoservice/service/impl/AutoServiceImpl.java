@@ -37,7 +37,7 @@ public class AutoServiceImpl implements AutoService {
 
     @Override
     public List<AutoResponseDTO> listarTodos() {
-        return autoRepositoy.findAll()
+        return autoRepositoy.listarAutosConPortada()
                 .stream()
                 .map(autoMapper::toResponseDTO)
                 .toList();
