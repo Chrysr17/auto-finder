@@ -19,4 +19,5 @@ public class AutoDTO {
     private Double precio;
     private Integer anioFabricacion;
 
+    private String imagenPortadaUrl;
 }
