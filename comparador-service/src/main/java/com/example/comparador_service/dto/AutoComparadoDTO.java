@@ -20,4 +20,6 @@ public class AutoComparadoDTO {
     private Integer anioFabricacion;
     private String color;
     private String categoriaNombre;
+
+    private String imagenPortadaUrl;
 }
