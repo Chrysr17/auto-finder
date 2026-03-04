@@ -26,4 +26,6 @@ public class AutoDTO {
     private Long categoriaId;
     private String categoriaNombre;
 
+    private String imagenPortadaUrl;
+
 }
