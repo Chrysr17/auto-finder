@@ -51,7 +51,7 @@ public class AutoController {
     }
 
     @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<AutoResponseDTO>> buscarPorNombre(@PathVariable String categoria){
+    public ResponseEntity<List<AutoResponseDTO>> buscarPorCategoria(@PathVariable String categoria){
         List<AutoResponseDTO> autos = autoService.buscarPorCategoria(categoria);
         return ResponseEntity.ok(autos);
     }
