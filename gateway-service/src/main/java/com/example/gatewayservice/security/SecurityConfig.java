@@ -17,7 +17,6 @@ public class SecurityConfig {
         this.jwtAuthWebFilter = jwtAuthWebFilter;
     }
 
-
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
