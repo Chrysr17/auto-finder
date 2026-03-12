@@ -7,6 +7,7 @@ import org.example.favoritoservice.model.Favorito;
 import org.example.favoritoservice.repository.FavoritoRepository;
 import org.example.favoritoservice.service.FavoritoService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,6 +53,7 @@ public class FavoritoServiceImpl implements FavoritoService {
     }
 
     @Override
+    @Transactional
     public void eliminarFavorito(String username, Long autoId) {
         favoritoRepository.deleteByUsernameAndAutoId(username, autoId);
     }
