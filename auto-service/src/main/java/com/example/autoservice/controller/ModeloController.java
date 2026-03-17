@@ -19,7 +19,7 @@ public class ModeloController {
         this.modeloService = modeloService;
     }
 
-    @RequestMapping
+    @GetMapping
     private ResponseEntity<List<ModeloResponseDTO>> listar(){
         List<ModeloResponseDTO> modelos = modeloService.listar();
         return ResponseEntity.ok(modelos);
