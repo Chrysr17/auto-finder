@@ -15,12 +15,25 @@ spring:
           predicates:
             - Path=/api/auth/**
         # Auto (protegido)
-        - id: auto-service
+        - id: auto-service-autos
           uri: ${AUTO_SERVICE_URL}
           predicates:
             - Path=/api/autos/**
-          filters:
-            - StripPrefix=0
+
+        - id: auto-service-marcas
+          uri: ${AUTO_SERVICE_URL}
+          predicates:
+            - Path=/api/marcas/**
+
+        - id: auto-service-modelos
+          uri: ${AUTO_SERVICE_URL}
+          predicates:
+            - Path=/api/modelos/**
+
+        - id: auto-service-categorias
+          uri: ${AUTO_SERVICE_URL}
+          predicates:
+            - Path=/api/categorias/**
 
         # Comparador (protegido)
         - id: comparador-service
