@@ -27,7 +27,7 @@ public class ComparadorServiceImpl implements ComparadorService {
                 .map(autoClient::obtenerAuto)
                 .collect(Collectors.toList());
 
-        String c = (criterio == null) ? "general" : criterio.toLowerCase();
+        String c = (criterio == null || criterio.isBlank()) ? "general" : criterio.toLowerCase();
 
         // 1) ordenar
         switch (c) {
@@ -42,13 +42,34 @@ public class ComparadorServiceImpl implements ComparadorService {
 
         // 2) mapear a DTO resumido (solo lo que quieres devolver)
         List<AutoComparadoDTO> comparados = autos.stream()
-                .map(a -> AutoComparadoDTO.builder()
-                        .id(a.getId())
-                        .marcaNombre(a.getMarcaNombre())
-                        .modeloNombre(a.getModeloNombre())
-                        .precio("precio".equals(c) ? a.getPrecio() : null)
-                        .anioFabricacion("anio".equals(c) ? a.getAnioFabricacion() : null)
-                        .build())
+                .map(a -> {
+                    AutoComparadoDTO.AutoComparadoDTOBuilder builder = AutoComparadoDTO.builder()
+                            .id(a.getId())
+                            .marcaNombre(a.getMarcaNombre())
+                            .modeloNombre(a.getModeloNombre());
+
+                    if ("general".equals(c)) {
+                        builder
+                                .precio(a.getPrecio())
+                                .anioFabricacion(a.getAnioFabricacion())
+                                .color(a.getColor())
+                                .categoriaNombre(a.getCategoriaNombre())
+                                .imagenPortadaUrl(a.getImagenPortadaUrl());
+                    } else if ("precio".equals(c)) {
+                        builder.precio(a.getPrecio());
+                    } else if ("anio".equals(c)) {
+                        builder.anioFabricacion(a.getAnioFabricacion());
+                    } else if ("marca".equals(c)) {
+                        builder
+                                .precio(a.getPrecio())
+                                .anioFabricacion(a.getAnioFabricacion())
+                                .color(a.getColor())
+                                .categoriaNombre(a.getCategoriaNombre())
+                                .imagenPortadaUrl(a.getImagenPortadaUrl());
+                    }
+
+                    return builder.build();
+                })
                 .toList();
 
         return ComparacionDTO.builder()
