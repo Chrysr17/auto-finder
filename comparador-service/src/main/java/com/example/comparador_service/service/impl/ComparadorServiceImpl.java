@@ -56,13 +56,20 @@ public class ComparadorServiceImpl implements ComparadorService {
                                 .categoriaNombre(a.getCategoriaNombre())
                                 .imagenPortadaUrl(a.getImagenPortadaUrl());
                     } else if ("precio".equals(c)) {
-                        builder.precio(a.getPrecio());
+                        builder
+                                .precio(a.getPrecio())
+                                .categoriaNombre(a.getCategoriaNombre())
+                                .color(a.getColor())
+                                .imagenPortadaUrl(a.getImagenPortadaUrl());
                     } else if ("anio".equals(c)) {
-                        builder.anioFabricacion(a.getAnioFabricacion());
+                        builder
+                                .anioFabricacion(a.getAnioFabricacion())
+                                .categoriaNombre(a.getCategoriaNombre())
+                                .color(a.getColor())
+                                .imagenPortadaUrl(a.getImagenPortadaUrl());
                     } else if ("marca".equals(c)) {
                         builder
                                 .precio(a.getPrecio())
-                                .anioFabricacion(a.getAnioFabricacion())
                                 .color(a.getColor())
                                 .categoriaNombre(a.getCategoriaNombre())
                                 .imagenPortadaUrl(a.getImagenPortadaUrl());
