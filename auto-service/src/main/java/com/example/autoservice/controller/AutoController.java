@@ -1,5 +1,7 @@
 package com.example.autoservice.controller;
 
+import com.example.autoservice.dto.AutoBusquedaResponseDTO;
+import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.service.AutoService;
@@ -23,6 +25,39 @@ public class AutoController {
     public ResponseEntity<List<AutoResponseDTO>> listar(){
         List<AutoResponseDTO> autos = autoService.listarTodos();
         return ResponseEntity.ok(autos);
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<AutoBusquedaResponseDTO> buscar(
+            @RequestParam(required = false) Long marcaId,
+            @RequestParam(required = false) Long modeloId,
+            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) Double precioMin,
+            @RequestParam(required = false) Double precioMax,
+            @RequestParam(required = false) Integer anioMin,
+            @RequestParam(required = false) Integer anioMax,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(required = false, defaultValue = "precio") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String direction
+    ) {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .marcaId(marcaId)
+                .modeloId(modeloId)
+                .categoriaId(categoriaId)
+                .precioMin(precioMin)
+                .precioMax(precioMax)
+                .anioMin(anioMin)
+                .anioMax(anioMax)
+                .color(color)
+                .page(page)
+                .size(size)
+                .sortBy(sortBy)
+                .direction(direction)
+                .build();
+
+        return ResponseEntity.ok(autoService.buscarConFiltros(filtro));
     }
 
     @GetMapping("/{id}")
