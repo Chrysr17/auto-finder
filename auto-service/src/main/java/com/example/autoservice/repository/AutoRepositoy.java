@@ -2,6 +2,7 @@ package com.example.autoservice.repository;
 
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.projection.AutoListadoProjection;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AutoRepositoy extends JpaRepository<Auto, Long> {
+public interface AutoRepositoy extends JpaRepository<Auto, Long>, JpaSpecificationExecutor<Auto> {
     List<Auto> findByMarcaNombre(String marca);
     List<Auto> findByCategoriaNombre(String categoria);
 
