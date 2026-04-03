@@ -4,6 +4,7 @@ import com.example.autoservice.dto.AutoBusquedaResponseDTO;
 import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.exception.InvalidSearchFilterException;
 import com.example.autoservice.mapper.AutoMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.repository.AutoRepositoy;
@@ -25,6 +26,7 @@ public class AutoServiceImpl implements AutoService {
 
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final AutoRepositoy autoRepositoy;
     private final MarcaRepository marcaRepository;
@@ -54,6 +56,8 @@ public class AutoServiceImpl implements AutoService {
 
     @Override
     public AutoBusquedaResponseDTO buscarConFiltros(AutoFiltroRequestDTO filtro) {
+        validateFilters(filtro);
+
         Pageable pageable = PageRequest.of(
                 normalizePage(filtro.getPage()),
                 normalizeSize(filtro.getSize()),
@@ -171,5 +175,45 @@ public class AutoServiceImpl implements AutoService {
             return "marca.nombre";
         }
         return "precio";
+    }
+
+    private void validateFilters(AutoFiltroRequestDTO filtro) {
+        if (filtro.getPrecioMin() != null && filtro.getPrecioMax() != null
+                && filtro.getPrecioMin() > filtro.getPrecioMax()) {
+            throw new InvalidSearchFilterException("precioMin no puede ser mayor que precioMax");
+        }
+
+        if (filtro.getAnioMin() != null && filtro.getAnioMax() != null
+                && filtro.getAnioMin() > filtro.getAnioMax()) {
+            throw new InvalidSearchFilterException("anioMin no puede ser mayor que anioMax");
+        }
+
+        if (filtro.getPage() != null && filtro.getPage() < 0) {
+            throw new InvalidSearchFilterException("page no puede ser menor que 0");
+        }
+
+        if (filtro.getSize() != null && filtro.getSize() <= 0) {
+            throw new InvalidSearchFilterException("size debe ser mayor que 0");
+        }
+
+        if (filtro.getSize() != null && filtro.getSize() > MAX_PAGE_SIZE) {
+            throw new InvalidSearchFilterException("size no puede ser mayor que " + MAX_PAGE_SIZE);
+        }
+
+        if (filtro.getSortBy() != null && !isSupportedSortBy(filtro.getSortBy())) {
+            throw new InvalidSearchFilterException("sortBy no soportado. Valores permitidos: precio, anioFabricacion, color, marca");
+        }
+
+        if (filtro.getDirection() != null
+                && !("asc".equalsIgnoreCase(filtro.getDirection()) || "desc".equalsIgnoreCase(filtro.getDirection()))) {
+            throw new InvalidSearchFilterException("direction no soportado. Valores permitidos: asc, desc");
+        }
+    }
+
+    private boolean isSupportedSortBy(String sortBy) {
+        return "precio".equalsIgnoreCase(sortBy)
+                || "anioFabricacion".equalsIgnoreCase(sortBy)
+                || "color".equalsIgnoreCase(sortBy)
+                || "marca".equalsIgnoreCase(sortBy);
     }
 }
