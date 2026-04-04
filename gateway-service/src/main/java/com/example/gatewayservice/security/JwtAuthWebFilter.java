@@ -13,9 +13,18 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtAuthWebFilter implements WebFilter {
+
+    private static final Set<String> PUBLIC_PATH_PREFIXES = Set.of(
+            "/api/auth/",
+            "/api/autos/",
+            "/api/marcas/",
+            "/api/modelos/",
+            "/api/categorias/"
+    );
 
     private final JwtUtil jwtUtil;
 
@@ -27,15 +36,18 @@ public class JwtAuthWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
         String path = exchange.getRequest().getURI().getPath();
+        boolean publicPath = isPublicPath(path);
 
-        // Permitir auth sin token
-        if (path.startsWith("/api/auth/")) {
+        if (publicPath && !hasBearerToken(exchange)) {
             return chain.filter(exchange);
         }
 
         String header = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (!StringUtils.hasText(header) || !header.startsWith("Bearer ")) {
+            if (publicPath) {
+                return chain.filter(exchange);
+            }
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
@@ -43,6 +55,9 @@ public class JwtAuthWebFilter implements WebFilter {
         String token = header.substring(7);
 
         if (!jwtUtil.isTokenValid(token)) {
+            if (publicPath) {
+                return chain.filter(exchange);
+            }
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
@@ -58,5 +73,14 @@ public class JwtAuthWebFilter implements WebFilter {
 
         return chain.filter(exchange)
                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+    }
+
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATH_PREFIXES.stream().anyMatch(path::startsWith);
+    }
+
+    private boolean hasBearerToken(ServerWebExchange exchange) {
+        String header = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        return StringUtils.hasText(header) && header.startsWith("Bearer ");
     }
 }
