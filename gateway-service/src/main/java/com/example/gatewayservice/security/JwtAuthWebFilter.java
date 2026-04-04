@@ -23,7 +23,8 @@ public class JwtAuthWebFilter implements WebFilter {
             "/api/autos/",
             "/api/marcas/",
             "/api/modelos/",
-            "/api/categorias/"
+            "/api/categorias/",
+            "/api/comparar/"
     );
 
     private final JwtUtil jwtUtil;

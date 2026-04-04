@@ -45,6 +45,85 @@ Este archivo funciona como memoria operativa del proyecto. Se usará para regist
 - Fase 2: favoritos enriquecidos con listas, notas y señales para recomendaciones.
 - Fase 3: observabilidad, trazabilidad, rate limiting y resiliencia entre servicios.
 
+## Avance Fase 1
+### 2026-04-02
+- Contexto: inicio de implementación de búsqueda avanzada en `auto-service`.
+- Cambio realizado:
+- Se agregó endpoint `GET /api/autos/buscar`.
+- Se agregaron filtros por `marcaId`, `modeloId`, `categoriaId`, rangos de precio, rangos de año y `color`.
+- Se agregó soporte de paginación (`page`, `size`) y ordenamiento (`sortBy`, `direction`).
+- Se implementó búsqueda dinámica con `JpaSpecificationExecutor` y `AutoSpecification`.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/controller/AutoController.java`
+- `auto-service/src/main/java/com/example/autoservice/service/AutoService.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/repository/AutoRepositoy.java`
+- `auto-service/src/main/java/com/example/autoservice/repository/AutoSpecification.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoFiltroRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoBusquedaResponseDTO.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q test` no es confiable en el estado actual del módulo porque el `SpringBootTest` existente falla por datasource no configurado.
+- Pendientes:
+- Validar reglas de negocio de filtros inválidos.
+- Estandarizar respuesta de error para búsqueda y CRUD.
+- Agregar tests unitarios de búsqueda avanzada.
+
+### 2026-04-02 - incremento 2
+- Contexto: validación de filtros inválidos para la búsqueda avanzada en `auto-service`.
+- Cambio realizado:
+- Se agregó `InvalidSearchFilterException`.
+- Se agregó `GlobalExceptionHandler` para responder `400 Bad Request` con payload consistente cuando los filtros de búsqueda son inválidos.
+- Se validan estos casos en la búsqueda:
+- `precioMin > precioMax`
+- `anioMin > anioMax`
+- `page < 0`
+- `size <= 0`
+- `size > 100`
+- `sortBy` fuera de `precio`, `anioFabricacion`, `color`, `marca`
+- `direction` fuera de `asc`, `desc`
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/InvalidSearchFilterException.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/GlobalExceptionHandler.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+
+### 2026-04-03 - incremento 3
+- Contexto: ajuste gradual de seguridad para alinear el producto con un discovery público tipo Kimovil.
+- Cambio realizado:
+- Se abrió el acceso público al catálogo en el gateway para rutas de lectura de `autos`, `marcas`, `modelos` y `categorias`.
+- Se corrigió el filtro JWT del gateway para no exigir token en rutas públicas y seguir autenticando cuando el token sí viene presente y es válido.
+- Se abrió el acceso `GET` público en `auto-service` para catálogo, detalle, búsqueda, marcas, modelos y categorías.
+- Se mantuvo la escritura del catálogo restringida a `ADMIN`.
+- Archivos tocados:
+- `gateway-service/src/main/java/com/example/gatewayservice/security/SecurityConfig.java`
+- `gateway-service/src/main/java/com/example/gatewayservice/security/JwtAuthWebFilter.java`
+- `auto-service/src/main/java/com/example/autoservice/security/SecurityConfig.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `gateway-service`.
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- Decisiones:
+- El catálogo debe ser público para favorecer exploración y búsqueda inicial.
+- Favoritos se mantiene autenticado.
+- La comparación avanzada seguirá evaluándose por separado en el siguiente incremento.
+
+### 2026-04-03 - incremento 4
+- Contexto: apertura gradual del comparador actual como parte del discovery público del producto.
+- Cambio realizado:
+- Se abrió el acceso público al endpoint actual de comparación en el gateway.
+- Se abrió el acceso público a `/api/comparar/**` en `comparador-service`.
+- Se mantiene la idea de separar más adelante una comparación avanzada autenticada si el servicio crece en personalización o funciones exclusivas.
+- Archivos tocados:
+- `gateway-service/src/main/java/com/example/gatewayservice/security/SecurityConfig.java`
+- `gateway-service/src/main/java/com/example/gatewayservice/security/JwtAuthWebFilter.java`
+- `comparador-service/src/main/java/com/example/comparador_service/security/SecurityConfig.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `gateway-service`.
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- Decisiones:
+- El comparador actual se considera comparación simple y por tanto parte del flujo público de exploración.
+- Favoritos continúa como funcionalidad autenticada.
+
 ## Próxima actualización
-- Registrar la checklist de la fase 1.
-- Marcar la primera mejora a implementar.
+- Retomar los pendientes de Fase 1 en `auto-service`: tests de búsqueda avanzada y estandarización de errores CRUD.

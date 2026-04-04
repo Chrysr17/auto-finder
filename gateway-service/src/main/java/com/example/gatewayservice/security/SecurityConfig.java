@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .pathMatchers("/api/marcas/**").permitAll()
                         .pathMatchers("/api/modelos/**").permitAll()
                         .pathMatchers("/api/categorias/**").permitAll()
+                        .pathMatchers("/api/comparar/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .addFilterAt(jwtAuthWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
