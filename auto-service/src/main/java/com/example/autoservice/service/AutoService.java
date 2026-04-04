@@ -6,12 +6,11 @@ import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface AutoService {
     List<AutoResponseDTO> listarTodos();
     AutoBusquedaResponseDTO buscarConFiltros(AutoFiltroRequestDTO filtro);
-    Optional<AutoResponseDTO> buscarPorId(Long id);
+    AutoResponseDTO buscarPorId(Long id);
     AutoResponseDTO registrar(AutoRequestDTO autoRequestDTO);
     AutoResponseDTO actualizar(Long id, AutoRequestDTO autoRequestDTO);
     void eliminar(Long id);

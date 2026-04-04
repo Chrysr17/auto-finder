@@ -4,6 +4,8 @@ import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.exception.InvalidSearchFilterException;
+import com.example.autoservice.exception.RelatedResourceNotFoundException;
+import com.example.autoservice.exception.ResourceNotFoundException;
 import com.example.autoservice.mapper.AutoMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.model.Categoria;
@@ -32,9 +34,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -95,22 +95,22 @@ class AutoServiceImplTest {
         when(autoRepositoy.findById(autoId)).thenReturn(Optional.of(auto));
         when(autoMapper.toResponseDTO(auto)).thenReturn(responseDTO);
 
-        Optional<AutoResponseDTO> resultado = autoService.buscarPorId(autoId);
+        AutoResponseDTO resultado = autoService.buscarPorId(autoId);
 
-        assertTrue(resultado.isPresent());
-        assertEquals(autoId, resultado.get().getId());
-        assertEquals("Azul", resultado.get().getColor());
+        assertEquals(autoId, resultado.getId());
+        assertEquals("Azul", resultado.getColor());
     }
 
     @Test
-    void buscarPorId_deberiaRetornarOptionalVacioSiNoExiste() {
+    void buscarPorId_deberiaLanzarExcepcionSiNoExiste() {
         Long autoId = 99L;
 
         when(autoRepositoy.findById(autoId)).thenReturn(Optional.empty());
 
-        Optional<AutoResponseDTO> resultado = autoService.buscarPorId(autoId);
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> autoService.buscarPorId(autoId));
 
-        assertFalse(resultado.isPresent());
+        assertEquals("Auto no encontrado", exception.getMessage());
     }
 
     @Test
@@ -283,7 +283,7 @@ class AutoServiceImplTest {
         when(autoMapper.toEntity(requestDTO)).thenReturn(auto);
         when(marcaRepository.findById(10L)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        RelatedResourceNotFoundException exception = assertThrows(RelatedResourceNotFoundException.class,
                 () -> autoService.registrar(requestDTO));
 
         assertEquals("Marca no existe", exception.getMessage());
@@ -350,7 +350,7 @@ class AutoServiceImplTest {
 
         when(autoRepositoy.findById(autoId)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> autoService.actualizar(autoId, requestDTO));
 
         assertEquals("Auto no encontrado", exception.getMessage());
@@ -361,9 +361,24 @@ class AutoServiceImplTest {
     void eliminar_deberiaEliminarPorId() {
         Long autoId = 8L;
 
+        when(autoRepositoy.existsById(autoId)).thenReturn(true);
+
         autoService.eliminar(autoId);
 
         verify(autoRepositoy).deleteById(autoId);
+    }
+
+    @Test
+    void eliminar_deberiaLanzarExcepcionSiAutoNoExiste() {
+        Long autoId = 8L;
+
+        when(autoRepositoy.existsById(autoId)).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> autoService.eliminar(autoId));
+
+        assertEquals("Auto no encontrado", exception.getMessage());
+        verify(autoRepositoy, never()).deleteById(autoId);
     }
 
     @Test

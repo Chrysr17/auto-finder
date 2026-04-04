@@ -5,6 +5,8 @@ import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.exception.InvalidSearchFilterException;
+import com.example.autoservice.exception.RelatedResourceNotFoundException;
+import com.example.autoservice.exception.ResourceNotFoundException;
 import com.example.autoservice.mapper.AutoMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.repository.AutoRepositoy;
@@ -20,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 @Service
 public class AutoServiceImpl implements AutoService {
 
@@ -79,9 +80,10 @@ public class AutoServiceImpl implements AutoService {
     }
 
     @Override
-    public Optional<AutoResponseDTO> buscarPorId(Long id) {
-        return autoRepositoy.findById(id)
-                .map(autoMapper::toResponseDTO);
+    public AutoResponseDTO buscarPorId(Long id) {
+        Auto auto = autoRepositoy.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
+        return autoMapper.toResponseDTO(auto);
     }
 
     @Override
@@ -89,13 +91,13 @@ public class AutoServiceImpl implements AutoService {
         Auto auto = autoMapper.toEntity(dto);
 
         auto.setMarca(marcaRepository.findById(dto.getMarcaId())
-                .orElseThrow(() -> new RuntimeException("Marca no existe")));
+                .orElseThrow(() -> new RelatedResourceNotFoundException("Marca no existe")));
 
         auto.setModelo(modeloRepository.findById(dto.getModeloId())
-                .orElseThrow(() -> new RuntimeException("Modelo no existe")));
+                .orElseThrow(() -> new RelatedResourceNotFoundException("Modelo no existe")));
 
         auto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("Categoria no existe")));
+                .orElseThrow(() -> new RelatedResourceNotFoundException("Categoria no existe")));
 
         return autoMapper.toResponseDTO(autoRepositoy.save(auto));
     }
@@ -103,7 +105,7 @@ public class AutoServiceImpl implements AutoService {
     @Override
     public AutoResponseDTO actualizar(Long id, AutoRequestDTO dto) {
         Auto existente = autoRepositoy.findById(id)
-                .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
 
         existente.setColor(dto.getColor());
         existente.setPrecio(dto.getPrecio());
@@ -111,17 +113,17 @@ public class AutoServiceImpl implements AutoService {
 
         if (dto.getMarcaId() != null) {
             existente.setMarca(marcaRepository.findById(dto.getMarcaId())
-                    .orElseThrow(() -> new RuntimeException("Marca no existe")));
+                    .orElseThrow(() -> new RelatedResourceNotFoundException("Marca no existe")));
         }
 
         if (dto.getModeloId() != null) {
             existente.setModelo(modeloRepository.findById(dto.getModeloId())
-                    .orElseThrow(() -> new RuntimeException("Modelo no existe")));
+                    .orElseThrow(() -> new RelatedResourceNotFoundException("Modelo no existe")));
         }
 
         if (dto.getCategoriaId() != null) {
             existente.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoria no existe")));
+                    .orElseThrow(() -> new RelatedResourceNotFoundException("Categoria no existe")));
         }
 
         return autoMapper.toResponseDTO(autoRepositoy.save(existente));
@@ -129,6 +131,9 @@ public class AutoServiceImpl implements AutoService {
 
     @Override
     public void eliminar(Long id) {
+        if (!autoRepositoy.existsById(id)) {
+            throw new ResourceNotFoundException("Auto no encontrado");
+        }
         autoRepositoy.deleteById(id);
     }
 
