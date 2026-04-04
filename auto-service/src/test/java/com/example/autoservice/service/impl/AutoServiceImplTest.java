@@ -3,6 +3,7 @@ package com.example.autoservice.service.impl;
 import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.exception.InvalidAutoRequestException;
 import com.example.autoservice.exception.InvalidSearchFilterException;
 import com.example.autoservice.exception.RelatedResourceNotFoundException;
 import com.example.autoservice.exception.ResourceNotFoundException;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
@@ -274,6 +276,9 @@ class AutoServiceImplTest {
     @Test
     void registrar_deberiaLanzarExcepcionSiMarcaNoExiste() {
         AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("Negro")
+                .precio(32000.0)
+                .anioFabricacion(2024)
                 .marcaId(10L)
                 .modeloId(20L)
                 .categoriaId(30L)
@@ -287,6 +292,77 @@ class AutoServiceImplTest {
                 () -> autoService.registrar(requestDTO));
 
         assertEquals("Marca no existe", exception.getMessage());
+        verify(autoRepositoy, never()).save(any(Auto.class));
+    }
+
+    @Test
+    void registrar_deberiaLanzarExcepcionSiColorEsInvalido() {
+        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("   ")
+                .precio(32000.0)
+                .anioFabricacion(2024)
+                .marcaId(10L)
+                .modeloId(20L)
+                .categoriaId(30L)
+                .build();
+
+        InvalidAutoRequestException exception = assertThrows(InvalidAutoRequestException.class,
+                () -> autoService.registrar(requestDTO));
+
+        assertEquals("color es obligatorio", exception.getMessage());
+        verify(autoRepositoy, never()).save(any(Auto.class));
+    }
+
+    @Test
+    void registrar_deberiaLanzarExcepcionSiPrecioNoEsPositivo() {
+        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("Negro")
+                .precio(0.0)
+                .anioFabricacion(2024)
+                .marcaId(10L)
+                .modeloId(20L)
+                .categoriaId(30L)
+                .build();
+
+        InvalidAutoRequestException exception = assertThrows(InvalidAutoRequestException.class,
+                () -> autoService.registrar(requestDTO));
+
+        assertEquals("precio debe ser mayor que 0", exception.getMessage());
+        verify(autoRepositoy, never()).save(any(Auto.class));
+    }
+
+    @Test
+    void registrar_deberiaLanzarExcepcionSiAnioFabricacionEstaFueraDeRango() {
+        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("Negro")
+                .precio(32000.0)
+                .anioFabricacion(Year.now().getValue() + 2)
+                .marcaId(10L)
+                .modeloId(20L)
+                .categoriaId(30L)
+                .build();
+
+        InvalidAutoRequestException exception = assertThrows(InvalidAutoRequestException.class,
+                () -> autoService.registrar(requestDTO));
+
+        assertEquals("anioFabricacion debe estar entre 1886 y " + (Year.now().getValue() + 1), exception.getMessage());
+        verify(autoRepositoy, never()).save(any(Auto.class));
+    }
+
+    @Test
+    void registrar_deberiaLanzarExcepcionSiCategoriaIdEsNulo() {
+        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("Negro")
+                .precio(32000.0)
+                .anioFabricacion(2024)
+                .marcaId(10L)
+                .modeloId(20L)
+                .build();
+
+        InvalidAutoRequestException exception = assertThrows(InvalidAutoRequestException.class,
+                () -> autoService.registrar(requestDTO));
+
+        assertEquals("categoriaId es obligatorio", exception.getMessage());
         verify(autoRepositoy, never()).save(any(Auto.class));
     }
 
@@ -346,7 +422,11 @@ class AutoServiceImplTest {
     @Test
     void actualizar_deberiaLanzarExcepcionSiAutoNoExiste() {
         Long autoId = 99L;
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder().color("Rojo").build();
+        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("Rojo")
+                .precio(10000.0)
+                .anioFabricacion(2021)
+                .build();
 
         when(autoRepositoy.findById(autoId)).thenReturn(Optional.empty());
 
@@ -355,6 +435,20 @@ class AutoServiceImplTest {
 
         assertEquals("Auto no encontrado", exception.getMessage());
         verify(autoRepositoy, never()).save(any(Auto.class));
+    }
+
+    @Test
+    void actualizar_deberiaLanzarExcepcionSiPrecioEsNulo() {
+        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+                .color("Rojo")
+                .anioFabricacion(2021)
+                .build();
+
+        InvalidAutoRequestException exception = assertThrows(InvalidAutoRequestException.class,
+                () -> autoService.actualizar(1L, requestDTO));
+
+        assertEquals("precio es obligatorio", exception.getMessage());
+        verify(autoRepositoy, never()).findById(1L);
     }
 
     @Test

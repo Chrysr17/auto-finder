@@ -4,6 +4,7 @@ import com.example.autoservice.dto.AutoBusquedaResponseDTO;
 import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.exception.InvalidAutoRequestException;
 import com.example.autoservice.exception.InvalidSearchFilterException;
 import com.example.autoservice.exception.RelatedResourceNotFoundException;
 import com.example.autoservice.exception.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.List;
 @Service
 public class AutoServiceImpl implements AutoService {
@@ -28,6 +30,7 @@ public class AutoServiceImpl implements AutoService {
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_SIZE = 10;
     private static final int MAX_PAGE_SIZE = 100;
+    private static final int MIN_FABRICATION_YEAR = 1886;
 
     private final AutoRepositoy autoRepositoy;
     private final MarcaRepository marcaRepository;
@@ -88,6 +91,8 @@ public class AutoServiceImpl implements AutoService {
 
     @Override
     public AutoResponseDTO registrar(AutoRequestDTO dto) {
+        validateCreateRequest(dto);
+
         Auto auto = autoMapper.toEntity(dto);
 
         auto.setMarca(marcaRepository.findById(dto.getMarcaId())
@@ -104,6 +109,8 @@ public class AutoServiceImpl implements AutoService {
 
     @Override
     public AutoResponseDTO actualizar(Long id, AutoRequestDTO dto) {
+        validateUpdateRequest(dto);
+
         Auto existente = autoRepositoy.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
 
@@ -220,5 +227,50 @@ public class AutoServiceImpl implements AutoService {
                 || "anioFabricacion".equalsIgnoreCase(sortBy)
                 || "color".equalsIgnoreCase(sortBy)
                 || "marca".equalsIgnoreCase(sortBy);
+    }
+
+    private void validateCreateRequest(AutoRequestDTO dto) {
+        validateBaseFields(dto);
+
+        if (dto.getMarcaId() == null) {
+            throw new InvalidAutoRequestException("marcaId es obligatorio");
+        }
+
+        if (dto.getModeloId() == null) {
+            throw new InvalidAutoRequestException("modeloId es obligatorio");
+        }
+
+        if (dto.getCategoriaId() == null) {
+            throw new InvalidAutoRequestException("categoriaId es obligatorio");
+        }
+    }
+
+    private void validateUpdateRequest(AutoRequestDTO dto) {
+        validateBaseFields(dto);
+    }
+
+    private void validateBaseFields(AutoRequestDTO dto) {
+        if (dto.getColor() == null || dto.getColor().isBlank()) {
+            throw new InvalidAutoRequestException("color es obligatorio");
+        }
+
+        if (dto.getPrecio() == null) {
+            throw new InvalidAutoRequestException("precio es obligatorio");
+        }
+
+        if (dto.getPrecio() <= 0) {
+            throw new InvalidAutoRequestException("precio debe ser mayor que 0");
+        }
+
+        if (dto.getAnioFabricacion() == null) {
+            throw new InvalidAutoRequestException("anioFabricacion es obligatorio");
+        }
+
+        int maxSupportedYear = Year.now().getValue() + 1;
+        if (dto.getAnioFabricacion() < MIN_FABRICATION_YEAR || dto.getAnioFabricacion() > maxSupportedYear) {
+            throw new InvalidAutoRequestException(
+                    "anioFabricacion debe estar entre " + MIN_FABRICATION_YEAR + " y " + maxSupportedYear
+            );
+        }
     }
 }
