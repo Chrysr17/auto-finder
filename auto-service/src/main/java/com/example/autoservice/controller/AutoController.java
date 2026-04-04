@@ -5,6 +5,7 @@ import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
 import com.example.autoservice.service.AutoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,13 +67,13 @@ public class AutoController {
     }
 
     @PostMapping
-    public ResponseEntity<AutoResponseDTO> registrar(@RequestBody AutoRequestDTO autoRequestDTO){
+    public ResponseEntity<AutoResponseDTO> registrar(@Valid @RequestBody AutoRequestDTO autoRequestDTO){
         AutoResponseDTO nuevo = autoService.registrar(autoRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AutoResponseDTO> actualizar(@PathVariable Long id, @RequestBody AutoRequestDTO autoRequestDTO){
+    public ResponseEntity<AutoResponseDTO> actualizar(@PathVariable Long id, @Valid @RequestBody AutoRequestDTO autoRequestDTO){
         AutoResponseDTO actualizado = autoService.actualizar(id, autoRequestDTO);
         return ResponseEntity.ok(actualizado);
     }
