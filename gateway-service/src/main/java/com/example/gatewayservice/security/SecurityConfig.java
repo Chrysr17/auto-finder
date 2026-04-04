@@ -25,6 +25,10 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(ex -> ex
                         .pathMatchers("/api/auth/**").permitAll()
+                        .pathMatchers("/api/autos/**").permitAll()
+                        .pathMatchers("/api/marcas/**").permitAll()
+                        .pathMatchers("/api/modelos/**").permitAll()
+                        .pathMatchers("/api/categorias/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .addFilterAt(jwtAuthWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
