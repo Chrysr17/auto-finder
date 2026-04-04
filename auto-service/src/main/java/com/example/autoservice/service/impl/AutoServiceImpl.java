@@ -1,9 +1,10 @@
 package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.AutoBusquedaResponseDTO;
+import com.example.autoservice.dto.AutoCreateRequestDTO;
 import com.example.autoservice.dto.AutoFiltroRequestDTO;
-import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.dto.AutoUpdateRequestDTO;
 import com.example.autoservice.exception.InvalidAutoRequestException;
 import com.example.autoservice.exception.InvalidSearchFilterException;
 import com.example.autoservice.exception.RelatedResourceNotFoundException;
@@ -90,7 +91,7 @@ public class AutoServiceImpl implements AutoService {
     }
 
     @Override
-    public AutoResponseDTO registrar(AutoRequestDTO dto) {
+    public AutoResponseDTO registrar(AutoCreateRequestDTO dto) {
         validateCreateRequest(dto);
 
         Auto auto = autoMapper.toEntity(dto);
@@ -108,7 +109,7 @@ public class AutoServiceImpl implements AutoService {
     }
 
     @Override
-    public AutoResponseDTO actualizar(Long id, AutoRequestDTO dto) {
+    public AutoResponseDTO actualizar(Long id, AutoUpdateRequestDTO dto) {
         validateUpdateRequest(dto);
 
         Auto existente = autoRepositoy.findById(id)
@@ -229,7 +230,7 @@ public class AutoServiceImpl implements AutoService {
                 || "marca".equalsIgnoreCase(sortBy);
     }
 
-    private void validateCreateRequest(AutoRequestDTO dto) {
+    private void validateCreateRequest(AutoCreateRequestDTO dto) {
         validateBaseFields(dto);
 
         if (dto.getMarcaId() == null) {
@@ -245,29 +246,37 @@ public class AutoServiceImpl implements AutoService {
         }
     }
 
-    private void validateUpdateRequest(AutoRequestDTO dto) {
+    private void validateUpdateRequest(AutoUpdateRequestDTO dto) {
         validateBaseFields(dto);
     }
 
-    private void validateBaseFields(AutoRequestDTO dto) {
-        if (dto.getColor() == null || dto.getColor().isBlank()) {
+    private void validateBaseFields(AutoCreateRequestDTO dto) {
+        validateBaseFields(dto.getColor(), dto.getPrecio(), dto.getAnioFabricacion());
+    }
+
+    private void validateBaseFields(AutoUpdateRequestDTO dto) {
+        validateBaseFields(dto.getColor(), dto.getPrecio(), dto.getAnioFabricacion());
+    }
+
+    private void validateBaseFields(String color, Double precio, Integer anioFabricacion) {
+        if (color == null || color.isBlank()) {
             throw new InvalidAutoRequestException("color es obligatorio");
         }
 
-        if (dto.getPrecio() == null) {
+        if (precio == null) {
             throw new InvalidAutoRequestException("precio es obligatorio");
         }
 
-        if (dto.getPrecio() <= 0) {
+        if (precio <= 0) {
             throw new InvalidAutoRequestException("precio debe ser mayor que 0");
         }
 
-        if (dto.getAnioFabricacion() == null) {
+        if (anioFabricacion == null) {
             throw new InvalidAutoRequestException("anioFabricacion es obligatorio");
         }
 
         int maxSupportedYear = Year.now().getValue() + 1;
-        if (dto.getAnioFabricacion() < MIN_FABRICATION_YEAR || dto.getAnioFabricacion() > maxSupportedYear) {
+        if (anioFabricacion < MIN_FABRICATION_YEAR || anioFabricacion > maxSupportedYear) {
             throw new InvalidAutoRequestException(
                     "anioFabricacion debe estar entre " + MIN_FABRICATION_YEAR + " y " + maxSupportedYear
             );
