@@ -1,8 +1,9 @@
 package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.AutoFiltroRequestDTO;
-import com.example.autoservice.dto.AutoRequestDTO;
+import com.example.autoservice.dto.AutoCreateRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.dto.AutoUpdateRequestDTO;
 import com.example.autoservice.exception.InvalidAutoRequestException;
 import com.example.autoservice.exception.InvalidSearchFilterException;
 import com.example.autoservice.exception.RelatedResourceNotFoundException;
@@ -221,7 +222,7 @@ class AutoServiceImplTest {
 
     @Test
     void registrar_deberiaGuardarAutoConRelacionesYRetornarDto() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoCreateRequestDTO requestDTO = AutoCreateRequestDTO.builder()
                 .color("Negro")
                 .precio(32000.0)
                 .anioFabricacion(2024)
@@ -275,7 +276,7 @@ class AutoServiceImplTest {
 
     @Test
     void registrar_deberiaLanzarExcepcionSiMarcaNoExiste() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoCreateRequestDTO requestDTO = AutoCreateRequestDTO.builder()
                 .color("Negro")
                 .precio(32000.0)
                 .anioFabricacion(2024)
@@ -297,7 +298,7 @@ class AutoServiceImplTest {
 
     @Test
     void registrar_deberiaLanzarExcepcionSiColorEsInvalido() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoCreateRequestDTO requestDTO = AutoCreateRequestDTO.builder()
                 .color("   ")
                 .precio(32000.0)
                 .anioFabricacion(2024)
@@ -315,7 +316,7 @@ class AutoServiceImplTest {
 
     @Test
     void registrar_deberiaLanzarExcepcionSiPrecioNoEsPositivo() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoCreateRequestDTO requestDTO = AutoCreateRequestDTO.builder()
                 .color("Negro")
                 .precio(0.0)
                 .anioFabricacion(2024)
@@ -333,7 +334,7 @@ class AutoServiceImplTest {
 
     @Test
     void registrar_deberiaLanzarExcepcionSiAnioFabricacionEstaFueraDeRango() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoCreateRequestDTO requestDTO = AutoCreateRequestDTO.builder()
                 .color("Negro")
                 .precio(32000.0)
                 .anioFabricacion(Year.now().getValue() + 2)
@@ -351,7 +352,7 @@ class AutoServiceImplTest {
 
     @Test
     void registrar_deberiaLanzarExcepcionSiCategoriaIdEsNulo() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoCreateRequestDTO requestDTO = AutoCreateRequestDTO.builder()
                 .color("Negro")
                 .precio(32000.0)
                 .anioFabricacion(2024)
@@ -384,7 +385,7 @@ class AutoServiceImplTest {
         Marca nuevaMarca = Marca.builder().id(11L).nombre("Honda").build();
         Modelo nuevoModelo = Modelo.builder().id(21L).nombre("Civic").build();
         Categoria nuevaCategoria = Categoria.builder().id(31L).nombre("Hatchback").build();
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoUpdateRequestDTO requestDTO = AutoUpdateRequestDTO.builder()
                 .color("Gris")
                 .precio(19500.0)
                 .anioFabricacion(2022)
@@ -422,7 +423,7 @@ class AutoServiceImplTest {
     @Test
     void actualizar_deberiaLanzarExcepcionSiAutoNoExiste() {
         Long autoId = 99L;
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoUpdateRequestDTO requestDTO = AutoUpdateRequestDTO.builder()
                 .color("Rojo")
                 .precio(10000.0)
                 .anioFabricacion(2021)
@@ -439,7 +440,7 @@ class AutoServiceImplTest {
 
     @Test
     void actualizar_deberiaLanzarExcepcionSiPrecioEsNulo() {
-        AutoRequestDTO requestDTO = AutoRequestDTO.builder()
+        AutoUpdateRequestDTO requestDTO = AutoUpdateRequestDTO.builder()
                 .color("Rojo")
                 .anioFabricacion(2021)
                 .build();
