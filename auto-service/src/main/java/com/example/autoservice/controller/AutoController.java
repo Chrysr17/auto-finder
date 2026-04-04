@@ -62,9 +62,7 @@ public class AutoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AutoResponseDTO> buscarPorid(@PathVariable Long id){
-        return autoService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(autoService.buscarPorId(id));
     }
 
     @PostMapping
