@@ -125,5 +125,23 @@ Este archivo funciona como memoria operativa del proyecto. Se usará para regist
 - El comparador actual se considera comparación simple y por tanto parte del flujo público de exploración.
 - Favoritos continúa como funcionalidad autenticada.
 
+### 2026-04-03 - incremento 5
+- Contexto: cierre del pendiente de tests unitarios para la búsqueda avanzada en `auto-service`.
+- Cambio realizado:
+- Se agregaron tests unitarios para `buscarConFiltros(...)` en `AutoServiceImplTest`.
+- Se cubrió un caso válido con paginación, ordenamiento por `marca` descendente y mapeo de resultados.
+- Se cubrieron casos inválidos para:
+- `precioMin > precioMax`
+- `page < 0`
+- `sortBy` no soportado
+- `direction` no soportado
+- Se validó que ante filtros inválidos no se invoque el repositorio.
+- Archivos tocados:
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -Dtest=AutoServiceImplTest test` pasó correctamente en `auto-service`.
+- Decisiones:
+- El siguiente paso de Fase 1 debe enfocarse en estandarizar errores CRUD y reemplazar `RuntimeException` genéricas en `auto-service`.
+
 ## Próxima actualización
-- Retomar los pendientes de Fase 1 en `auto-service`: tests de búsqueda avanzada y estandarización de errores CRUD.
+- Retomar los pendientes de Fase 1 en `auto-service`: estandarización de errores CRUD y cierre de validaciones de negocio restantes.

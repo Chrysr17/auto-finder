@@ -1,7 +1,9 @@
 package com.example.autoservice.service.impl;
 
+import com.example.autoservice.dto.AutoFiltroRequestDTO;
 import com.example.autoservice.dto.AutoRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.exception.InvalidSearchFilterException;
 import com.example.autoservice.mapper.AutoMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.model.Categoria;
@@ -14,9 +16,15 @@ import com.example.autoservice.repository.MarcaRepository;
 import com.example.autoservice.repository.ModeloRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -102,6 +111,110 @@ class AutoServiceImplTest {
         Optional<AutoResponseDTO> resultado = autoService.buscarPorId(autoId);
 
         assertFalse(resultado.isPresent());
+    }
+
+    @Test
+    void buscarConFiltros_deberiaRetornarResultadoPaginadoYOrdenado() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .marcaId(10L)
+                .precioMin(15000.0)
+                .precioMax(25000.0)
+                .anioMin(2020)
+                .anioMax(2024)
+                .color("Azul")
+                .page(1)
+                .size(5)
+                .sortBy("marca")
+                .direction("desc")
+                .build();
+        Auto auto = Auto.builder().id(1L).color("Azul").precio(22000.0).anioFabricacion(2023).build();
+        AutoResponseDTO responseDTO = AutoResponseDTO.builder()
+                .id(1L)
+                .color("Azul")
+                .precio(22000.0)
+                .anioFabricacion(2023)
+                .marcaNombre("Toyota")
+                .build();
+        Page<Auto> autosPage = new PageImpl<>(
+                List.of(auto),
+                PageRequest.of(1, 5, org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "marca.nombre")),
+                11
+        );
+
+        when(autoRepositoy.findAll(any(Specification.class), any(Pageable.class))).thenReturn(autosPage);
+        when(autoMapper.toResponseDTO(auto)).thenReturn(responseDTO);
+
+        var resultado = autoService.buscarConFiltros(filtro);
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(autoRepositoy).findAll(any(Specification.class), pageableCaptor.capture());
+
+        Pageable pageable = pageableCaptor.getValue();
+        assertEquals(1, pageable.getPageNumber());
+        assertEquals(5, pageable.getPageSize());
+        assertEquals(org.springframework.data.domain.Sort.Direction.DESC,
+                pageable.getSort().getOrderFor("marca.nombre").getDirection());
+        assertEquals(1, resultado.getContent().size());
+        assertEquals(11, resultado.getTotalElements());
+        assertEquals(3, resultado.getTotalPages());
+        assertEquals("Azul", resultado.getContent().get(0).getColor());
+        assertFalse(resultado.isFirst());
+        assertFalse(resultado.isLast());
+    }
+
+    @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiPrecioMinEsMayorQuePrecioMax() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .precioMin(30000.0)
+                .precioMax(20000.0)
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("precioMin no puede ser mayor que precioMax", exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiPageEsNegativo() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .page(-1)
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("page no puede ser menor que 0", exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiSortByNoEsSoportado() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .sortBy("kilometraje")
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("sortBy no soportado. Valores permitidos: precio, anioFabricacion, color, marca",
+                exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiDirectionNoEsSoportado() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .direction("up")
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("direction no soportado. Valores permitidos: asc, desc", exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
