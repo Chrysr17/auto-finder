@@ -1,7 +1,8 @@
 package com.example.autoservice.mapper;
 
-import com.example.autoservice.dto.AutoRequestDTO;
+import com.example.autoservice.dto.AutoCreateRequestDTO;
 import com.example.autoservice.dto.AutoResponseDTO;
+import com.example.autoservice.dto.AutoUpdateRequestDTO;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.projection.AutoListadoProjection;
 import org.mapstruct.Mapper;
@@ -28,7 +29,12 @@ public interface AutoMapper {
     @Mapping(source = "marcaId", target = "marca.id")
     @Mapping(source = "modeloId", target = "modelo.id")
     @Mapping(source = "categoriaId", target = "categoria.id")
-    Auto toEntity(AutoRequestDTO dto);
+    Auto toEntity(AutoCreateRequestDTO dto);
+
+    @Mapping(source = "marcaId", target = "marca.id")
+    @Mapping(source = "modeloId", target = "modelo.id")
+    @Mapping(source = "categoriaId", target = "categoria.id")
+    Auto toEntity(AutoUpdateRequestDTO dto);
 
     @Mapping(source = "anioFabricacion", target = "anioFabricacion")
     @Mapping(source = "imagenPortadaUrl", target = "imagenPortadaUrl")
