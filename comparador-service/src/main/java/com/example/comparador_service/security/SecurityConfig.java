@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 "/actuator/health"
                         ).permitAll()
 
-                        .requestMatchers( "/api/comparar/**").authenticated()
+                        .requestMatchers("/api/comparar/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
