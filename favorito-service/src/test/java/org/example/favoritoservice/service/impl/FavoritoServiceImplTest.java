@@ -3,6 +3,10 @@ package org.example.favoritoservice.service.impl;
 import org.example.favoritoservice.client.AutoClient;
 import org.example.favoritoservice.dto.AutoDTO;
 import org.example.favoritoservice.dto.FavoritoDTO;
+import org.example.favoritoservice.exception.DuplicateFavoriteException;
+import org.example.favoritoservice.exception.InvalidFavoriteRequestException;
+import org.example.favoritoservice.exception.RelatedResourceNotFoundException;
+import org.example.favoritoservice.exception.ResourceNotFoundException;
 import org.example.favoritoservice.model.Favorito;
 import org.example.favoritoservice.repository.FavoritoRepository;
 import org.junit.jupiter.api.Test;
@@ -63,7 +67,7 @@ class FavoritoServiceImplTest {
 
         when(autoClient.obtenerAuto(autoId)).thenReturn(null);
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        RelatedResourceNotFoundException exception = assertThrows(RelatedResourceNotFoundException.class,
                 () -> favoritoService.agregarFavorito(username, autoId));
 
         assertEquals("No se encontro el auto", exception.getMessage());
@@ -78,10 +82,20 @@ class FavoritoServiceImplTest {
         when(autoClient.obtenerAuto(autoId)).thenReturn(AutoDTO.builder().id(autoId).build());
         when(favoritoRepository.existsByUsernameAndAutoId(username, autoId)).thenReturn(true);
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        DuplicateFavoriteException exception = assertThrows(DuplicateFavoriteException.class,
                 () -> favoritoService.agregarFavorito(username, autoId));
 
         assertEquals("Ya está en favoritos", exception.getMessage());
+        verify(favoritoRepository, never()).save(any(Favorito.class));
+    }
+
+    @Test
+    void agregarFavorito_deberiaLanzarExcepcionSiAutoIdEsInvalido() {
+        InvalidFavoriteRequestException exception = assertThrows(InvalidFavoriteRequestException.class,
+                () -> favoritoService.agregarFavorito("christian", 0L));
+
+        assertEquals("autoId debe ser mayor que 0", exception.getMessage());
+        verify(autoClient, never()).obtenerAuto(any());
         verify(favoritoRepository, never()).save(any(Favorito.class));
     }
 
@@ -118,5 +132,32 @@ class FavoritoServiceImplTest {
         assertEquals(1, resultado.size());
         assertEquals(autoId, resultado.get(0).getId());
         assertEquals("Toyota", resultado.get(0).getMarcaNombre());
+    }
+
+    @Test
+    void eliminarFavorito_deberiaEliminarCuandoExiste() {
+        String username = "christian";
+        Long autoId = 20L;
+        Favorito favorito = Favorito.builder().id(1L).username(username).autoId(autoId).fechaCreacion(LocalDateTime.now()).build();
+
+        when(favoritoRepository.findByUsernameAndAutoId(username, autoId)).thenReturn(java.util.Optional.of(favorito));
+
+        favoritoService.eliminarFavorito(username, autoId);
+
+        verify(favoritoRepository).delete(favorito);
+    }
+
+    @Test
+    void eliminarFavorito_deberiaLanzarExcepcionSiNoExiste() {
+        String username = "christian";
+        Long autoId = 20L;
+
+        when(favoritoRepository.findByUsernameAndAutoId(username, autoId)).thenReturn(java.util.Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> favoritoService.eliminarFavorito(username, autoId));
+
+        assertEquals("Favorito no encontrado", exception.getMessage());
+        verify(favoritoRepository, never()).delete(any(Favorito.class));
     }
 }
