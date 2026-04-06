@@ -1,5 +1,6 @@
 package com.example.autoservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CategoriaRequestDTO {
+
+    @NotBlank
     private String nombre;
+
+    @NotBlank
     private String descripcion;
 }
