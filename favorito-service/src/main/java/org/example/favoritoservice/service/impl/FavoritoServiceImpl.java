@@ -1,8 +1,13 @@
 package org.example.favoritoservice.service.impl;
 
+import feign.FeignException;
 import org.example.favoritoservice.client.AutoClient;
 import org.example.favoritoservice.dto.AutoDTO;
 import org.example.favoritoservice.dto.FavoritoDTO;
+import org.example.favoritoservice.exception.DuplicateFavoriteException;
+import org.example.favoritoservice.exception.InvalidFavoriteRequestException;
+import org.example.favoritoservice.exception.RelatedResourceNotFoundException;
+import org.example.favoritoservice.exception.ResourceNotFoundException;
 import org.example.favoritoservice.model.Favorito;
 import org.example.favoritoservice.repository.FavoritoRepository;
 import org.example.favoritoservice.service.FavoritoService;
@@ -33,14 +38,15 @@ public class FavoritoServiceImpl implements FavoritoService {
 
     @Override
     public FavoritoDTO agregarFavorito(String usarname, Long autoId) {
+        validarSolicitud(usarname, autoId);
 
-        AutoDTO auto = autoClient.obtenerAuto(autoId);
+        AutoDTO auto = obtenerAutoExistente(autoId);
         if(auto == null || auto.getId() == null) {
-            throw new RuntimeException("No se encontro el auto");
+            throw new RelatedResourceNotFoundException("No se encontro el auto");
         }
 
         if (favoritoRepository.existsByUsernameAndAutoId(usarname, autoId)){
-            throw new RuntimeException("Ya está en favoritos");
+            throw new DuplicateFavoriteException("Ya está en favoritos");
         }
 
         Favorito favorito = Favorito.builder()
@@ -55,11 +61,18 @@ public class FavoritoServiceImpl implements FavoritoService {
     @Override
     @Transactional
     public void eliminarFavorito(String username, Long autoId) {
-        favoritoRepository.deleteByUsernameAndAutoId(username, autoId);
+        validarSolicitud(username, autoId);
+
+        Favorito favorito = favoritoRepository.findByUsernameAndAutoId(username, autoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Favorito no encontrado"));
+
+        favoritoRepository.delete(favorito);
     }
 
     @Override
     public List<FavoritoDTO> listarFavoritos(String username) {
+        validarUsername(username);
+
         return favoritoRepository.findByUsernameOrderByFechaCreacionDesc(username)
                 .stream()
                 .map(this::toDTO)
@@ -68,10 +81,38 @@ public class FavoritoServiceImpl implements FavoritoService {
 
     @Override
     public List<AutoDTO> listarFavoritosConDetalle(String username) {
+        validarUsername(username);
+
         return favoritoRepository.findByUsernameOrderByFechaCreacionDesc(username)
                 .stream()
                 .map(f -> autoClient.obtenerAuto(f.getAutoId()))
                 .toList();
+    }
+
+    private AutoDTO obtenerAutoExistente(Long autoId) {
+        try {
+            return autoClient.obtenerAuto(autoId);
+        } catch (FeignException.NotFound ex) {
+            throw new RelatedResourceNotFoundException("No se encontro el auto");
+        }
+    }
+
+    private void validarSolicitud(String username, Long autoId) {
+        validarUsername(username);
+
+        if (autoId == null) {
+            throw new InvalidFavoriteRequestException("autoId es obligatorio");
+        }
+
+        if (autoId <= 0) {
+            throw new InvalidFavoriteRequestException("autoId debe ser mayor que 0");
+        }
+    }
+
+    private void validarUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new InvalidFavoriteRequestException("username es obligatorio");
+        }
     }
 
 }
