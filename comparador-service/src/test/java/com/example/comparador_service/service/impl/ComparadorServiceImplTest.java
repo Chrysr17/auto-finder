@@ -3,6 +3,8 @@ package com.example.comparador_service.service.impl;
 import com.example.comparador_service.client.AutoClient;
 import com.example.comparador_service.dto.AutoDTO;
 import com.example.comparador_service.dto.ComparacionDTO;
+import com.example.comparador_service.exception.InvalidComparisonRequestException;
+import com.example.comparador_service.exception.RelatedResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +16,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +41,7 @@ class ComparadorServiceImplTest {
         ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), null);
 
         assertEquals(2, resultado.getAutosComparados().size());
-        assertNull(resultado.getCriterio());
+        assertEquals("general", resultado.getCriterio());
         assertEquals(1L, resultado.getAutosComparados().get(0).getId());
         assertEquals(22000.0, resultado.getAutosComparados().get(0).getPrecio());
         assertEquals(2022, resultado.getAutosComparados().get(0).getAnioFabricacion());
@@ -93,7 +98,7 @@ class ComparadorServiceImplTest {
 
         ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "MARCA");
 
-        assertEquals("MARCA", resultado.getCriterio());
+        assertEquals("marca", resultado.getCriterio());
         assertEquals(2L, resultado.getAutosComparados().get(0).getId());
         assertEquals("Audi", resultado.getAutosComparados().get(0).getMarcaNombre());
         assertEquals(18000.0, resultado.getAutosComparados().get(0).getPrecio());
@@ -102,6 +107,44 @@ class ComparadorServiceImplTest {
         assertEquals("img-2", resultado.getAutosComparados().get(0).getImagenPortadaUrl());
         assertNull(resultado.getAutosComparados().get(0).getAnioFabricacion());
         assertNotNull(resultado.getAutosComparados().get(0).getModeloNombre());
+    }
+
+    @Test
+    void compararAutos_deberiaLanzarExcepcionSiNoHaySuficientesIds() {
+        InvalidComparisonRequestException exception = assertThrows(InvalidComparisonRequestException.class,
+                () -> comparadorService.compararAutos(List.of(1L), "general"));
+
+        assertEquals("Debe enviar al menos dos autos para comparar", exception.getMessage());
+        verify(autoClient, never()).obtenerAuto(1L);
+    }
+
+    @Test
+    void compararAutos_deberiaLanzarExcepcionSiHayIdsDuplicados() {
+        InvalidComparisonRequestException exception = assertThrows(InvalidComparisonRequestException.class,
+                () -> comparadorService.compararAutos(List.of(1L, 1L), "general"));
+
+        assertEquals("No se pueden comparar autos duplicados", exception.getMessage());
+        verify(autoClient, never()).obtenerAuto(1L);
+    }
+
+    @Test
+    void compararAutos_deberiaLanzarExcepcionSiCriterioNoEsSoportado() {
+        InvalidComparisonRequestException exception = assertThrows(InvalidComparisonRequestException.class,
+                () -> comparadorService.compararAutos(List.of(1L, 2L), "potencia"));
+
+        assertEquals("criterio no soportado. Valores permitidos: general, precio, anio, marca", exception.getMessage());
+        verify(autoClient, never()).obtenerAuto(1L);
+    }
+
+    @Test
+    void compararAutos_deberiaLanzarExcepcionSiAutoNoExiste() {
+        when(autoClient.obtenerAuto(1L)).thenReturn(crearAuto(1L, "Rojo", 22000.0, 2022, "Toyota", "Corolla", "Sedan", "img-1"));
+        when(autoClient.obtenerAuto(2L)).thenReturn(null);
+
+        RelatedResourceNotFoundException exception = assertThrows(RelatedResourceNotFoundException.class,
+                () -> comparadorService.compararAutos(List.of(1L, 2L), "general"));
+
+        assertEquals("No se encontro el auto con id: 2", exception.getMessage());
     }
 
     private AutoDTO crearAuto(
