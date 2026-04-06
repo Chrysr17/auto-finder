@@ -2,6 +2,9 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.AutoImagenRequestDTO;
 import com.example.autoservice.dto.AutoImagenResponseDTO;
+import com.example.autoservice.exception.InvalidCatalogRequestException;
+import com.example.autoservice.exception.ResourceConflictException;
+import com.example.autoservice.exception.ResourceNotFoundException;
 import com.example.autoservice.mapper.AutoImagenMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.model.AutoImagen;
@@ -28,10 +31,13 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public AutoImagenResponseDTO agregarImagen(Long autoId, AutoImagenRequestDTO requestDTO) {
+        validarAutoId(autoId);
+        validarImagenRequest(requestDTO);
+
         Auto auto = autoRepositoy.findById(autoId)
-                .orElseThrow(()-> new RuntimeException("No se encontro el auto: " +  autoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado con id: " +  autoId));
         if (autoImagenRepository.existsByAutoIdAndOrden(autoId, requestDTO.getOrden())){
-            throw new RuntimeException("Ya existe una imagen con el orden: " +  requestDTO.getOrden());
+            throw new ResourceConflictException("Ya existe una imagen con el orden: " +  requestDTO.getOrden());
         }
         AutoImagen imagen = autoImagenMapper.toEntity(requestDTO);
         imagen.setAuto(auto);
@@ -41,9 +47,10 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public List<AutoImagenResponseDTO> listarImagenes(Long autoId) {
+        validarAutoId(autoId);
 
         if (!autoRepositoy.existsById(autoId)){
-            throw new RuntimeException("No se encontro el auto con id: " +  autoId);
+            throw new ResourceNotFoundException("Auto no encontrado con id: " +  autoId);
         }
         return autoImagenRepository.findByAutoIdOrderByOrdenAsc(autoId)
                 .stream()
@@ -53,15 +60,17 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public AutoImagenResponseDTO editarImagen(Long imagenid, AutoImagenRequestDTO requestDTO) {
+        validarImagenId(imagenid);
+        validarImagenRequest(requestDTO);
 
         AutoImagen imagen = autoImagenRepository.findById(imagenid)
-                .orElseThrow(()-> new RuntimeException("Imagen no encontrada con id: " + imagenid));
+                .orElseThrow(() -> new ResourceNotFoundException("Imagen no encontrada con id: " + imagenid));
 
         Long autoId = imagen.getAuto().getId();
 
         if(!imagen.getOrden().equals(requestDTO.getOrden())
                 && autoImagenRepository.existsByAutoIdAndOrden(autoId, requestDTO.getOrden())){
-            throw new RuntimeException("Ya existe una imagen con el orden" + requestDTO.getOrden());
+            throw new ResourceConflictException("Ya existe una imagen con el orden: " + requestDTO.getOrden());
         }
 
         imagen.setUrl(requestDTO.getUrl());
@@ -73,21 +82,26 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public void eliminarImagen(Long imagenid) {
-        AutoImagen imagen = autoImagenRepository.findById(imagenid)
-                .orElseThrow(()->new RuntimeException("Imagen no encotrada"));
+        validarImagenId(imagenid);
+
+        autoImagenRepository.findById(imagenid)
+                .orElseThrow(() -> new ResourceNotFoundException("Imagen no encontrada con id: " + imagenid));
         autoImagenRepository.deleteById(imagenid);
     }
 
     @Override
     public void establecerComoPortada(Long autoId, Long imagenid) {
+        validarAutoId(autoId);
+        validarImagenId(imagenid);
+
         Auto auto = autoRepositoy.findById(autoId)
-                .orElseThrow(()-> new RuntimeException("Auto no encontrado con id: " + autoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado con id: " + autoId));
 
         AutoImagen nuevaPortada = autoImagenRepository.findById(imagenid)
-                .orElseThrow(()-> new RuntimeException("Imagen no encontrada con id: " + imagenid));
+                .orElseThrow(() -> new ResourceNotFoundException("Imagen no encontrada con id: " + imagenid));
 
         if (!nuevaPortada.getAuto().getId().equals(auto.getId())){
-            throw new RuntimeException("La imagen no pertenece a este auto");
+            throw new InvalidCatalogRequestException("La imagen no pertenece a este auto");
         }
 
         if (nuevaPortada.getOrden() != null && nuevaPortada.getOrden() == 1){
@@ -120,9 +134,10 @@ public class AutoImagenServiceImpl implements AutoImagenService {
 
     @Override
     public String obtenerPortada(Long autoId) {
+        validarAutoId(autoId);
 
         if (!autoRepositoy.existsById(autoId)){
-            throw new RuntimeException("Auto no encontrado con id: " + autoId);
+            throw new ResourceNotFoundException("Auto no encontrado con id: " + autoId);
         }
         return autoImagenRepository.findByAutoIdOrderByOrdenAsc(autoId)
                 .stream()
@@ -130,5 +145,38 @@ public class AutoImagenServiceImpl implements AutoImagenService {
                 .map(AutoImagen::getUrl)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private void validarAutoId(Long autoId) {
+        if (autoId == null) {
+            throw new InvalidCatalogRequestException("autoId es obligatorio");
+        }
+        if (autoId <= 0) {
+            throw new InvalidCatalogRequestException("autoId debe ser mayor que 0");
+        }
+    }
+
+    private void validarImagenId(Long imagenId) {
+        if (imagenId == null) {
+            throw new InvalidCatalogRequestException("imagenId es obligatorio");
+        }
+        if (imagenId <= 0) {
+            throw new InvalidCatalogRequestException("imagenId debe ser mayor que 0");
+        }
+    }
+
+    private void validarImagenRequest(AutoImagenRequestDTO requestDTO) {
+        if (requestDTO == null) {
+            throw new InvalidCatalogRequestException("La solicitud de imagen es obligatoria");
+        }
+        if (requestDTO.getUrl() == null || requestDTO.getUrl().isBlank()) {
+            throw new InvalidCatalogRequestException("url es obligatoria");
+        }
+        if (requestDTO.getOrden() == null) {
+            throw new InvalidCatalogRequestException("orden es obligatorio");
+        }
+        if (requestDTO.getOrden() <= 0) {
+            throw new InvalidCatalogRequestException("orden debe ser mayor que 0");
+        }
     }
 }
