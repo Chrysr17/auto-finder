@@ -2,6 +2,9 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.ModeloRequestDTO;
 import com.example.autoservice.dto.ModeloResponseDTO;
+import com.example.autoservice.exception.InvalidCatalogRequestException;
+import com.example.autoservice.exception.RelatedResourceNotFoundException;
+import com.example.autoservice.exception.ResourceNotFoundException;
 import com.example.autoservice.mapper.ModeloMapper;
 import com.example.autoservice.model.Marca;
 import com.example.autoservice.model.Modelo;
@@ -17,9 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,7 +68,7 @@ class ModeloServiceImplTest {
     }
 
     @Test
-    void buscarPorId_deberiaRetornarOptionalConDtoSiExiste() {
+    void buscarPorId_deberiaRetornarDtoSiExiste() {
         Long modeloId = 1L;
         Marca marca = Marca.builder().id(2L).nombre("Honda").build();
         Modelo modelo = Modelo.builder().id(modeloId).nombre("Civic").marca(marca).build();
@@ -81,22 +82,22 @@ class ModeloServiceImplTest {
         when(modeloRepository.findById(modeloId)).thenReturn(Optional.of(modelo));
         when(modeloMapper.toDTO(modelo)).thenReturn(responseDTO);
 
-        Optional<ModeloResponseDTO> resultado = modeloService.buscarPorId(modeloId);
+        ModeloResponseDTO resultado = modeloService.buscarPorId(modeloId);
 
-        assertTrue(resultado.isPresent());
-        assertEquals(modeloId, resultado.get().getId());
-        assertEquals("Civic", resultado.get().getNombre());
+        assertEquals(modeloId, resultado.getId());
+        assertEquals("Civic", resultado.getNombre());
     }
 
     @Test
-    void buscarPorId_deberiaRetornarOptionalVacioSiNoExiste() {
+    void buscarPorId_deberiaLanzarExcepcionSiNoExiste() {
         Long modeloId = 99L;
 
         when(modeloRepository.findById(modeloId)).thenReturn(Optional.empty());
 
-        Optional<ModeloResponseDTO> resultado = modeloService.buscarPorId(modeloId);
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> modeloService.buscarPorId(modeloId));
 
-        assertFalse(resultado.isPresent());
+        assertEquals("Modelo no encontrado", exception.getMessage());
     }
 
     @Test
@@ -145,10 +146,19 @@ class ModeloServiceImplTest {
         when(modeloMapper.toEntity(requestDTO)).thenReturn(modelo);
         when(marcaRepository.findById(99L)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        RelatedResourceNotFoundException exception = assertThrows(RelatedResourceNotFoundException.class,
                 () -> modeloService.registrar(requestDTO));
 
         assertEquals("Marca no encontrada", exception.getMessage());
+        verify(modeloRepository, never()).save(any(Modelo.class));
+    }
+
+    @Test
+    void registrar_deberiaLanzarExcepcionSiMarcaIdEsInvalido() {
+        InvalidCatalogRequestException exception = assertThrows(InvalidCatalogRequestException.class,
+                () -> modeloService.registrar(ModeloRequestDTO.builder().nombre("A3").marcaId(0L).build()));
+
+        assertEquals("marcaId debe ser mayor que 0", exception.getMessage());
         verify(modeloRepository, never()).save(any(Modelo.class));
     }
 }

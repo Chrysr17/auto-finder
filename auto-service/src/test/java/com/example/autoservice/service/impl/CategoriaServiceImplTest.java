@@ -2,6 +2,8 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.CategoriaRequestDTO;
 import com.example.autoservice.dto.CategoriaResponseDTO;
+import com.example.autoservice.exception.InvalidCatalogRequestException;
+import com.example.autoservice.exception.ResourceNotFoundException;
 import com.example.autoservice.mapper.CategoriaMapper;
 import com.example.autoservice.model.Categoria;
 import com.example.autoservice.repository.CategoriaRepository;
@@ -15,9 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -59,7 +59,7 @@ class CategoriaServiceImplTest {
     }
 
     @Test
-    void buscarPorId_deberiaRetornarOptionalConDtoSiExiste() {
+    void buscarPorId_deberiaRetornarDtoSiExiste() {
         Long categoriaId = 1L;
         Categoria categoria = Categoria.builder().id(categoriaId).nombre("Sedan").build();
         CategoriaResponseDTO responseDTO = CategoriaResponseDTO.builder().id(categoriaId).nombre("Sedan").build();
@@ -67,22 +67,22 @@ class CategoriaServiceImplTest {
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
         when(categoriaMapper.toResponseDTO(categoria)).thenReturn(responseDTO);
 
-        Optional<CategoriaResponseDTO> resultado = categoriaService.buscarPorId(categoriaId);
+        CategoriaResponseDTO resultado = categoriaService.buscarPorId(categoriaId);
 
-        assertTrue(resultado.isPresent());
-        assertEquals(categoriaId, resultado.get().getId());
-        assertEquals("Sedan", resultado.get().getNombre());
+        assertEquals(categoriaId, resultado.getId());
+        assertEquals("Sedan", resultado.getNombre());
     }
 
     @Test
-    void buscarPorId_deberiaRetornarOptionalVacioSiNoExiste() {
+    void buscarPorId_deberiaLanzarExcepcionSiNoExiste() {
         Long categoriaId = 99L;
 
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
 
-        Optional<CategoriaResponseDTO> resultado = categoriaService.buscarPorId(categoriaId);
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> categoriaService.buscarPorId(categoriaId));
 
-        assertFalse(resultado.isPresent());
+        assertEquals("Categoria no encontrada", exception.getMessage());
     }
 
     @Test
@@ -157,10 +157,19 @@ class CategoriaServiceImplTest {
 
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> categoriaService.actualizar(categoriaId, requestDTO));
 
         assertEquals("Categoria no encontrada", exception.getMessage());
+        verify(categoriaRepository, never()).save(any(Categoria.class));
+    }
+
+    @Test
+    void registrar_deberiaLanzarExcepcionSiDescripcionEsInvalida() {
+        InvalidCatalogRequestException exception = assertThrows(InvalidCatalogRequestException.class,
+                () -> categoriaService.registrar(CategoriaRequestDTO.builder().nombre("SUV").descripcion(" ").build()));
+
+        assertEquals("descripcion es obligatoria", exception.getMessage());
         verify(categoriaRepository, never()).save(any(Categoria.class));
     }
 }

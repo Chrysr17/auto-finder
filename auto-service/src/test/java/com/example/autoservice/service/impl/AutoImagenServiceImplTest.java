@@ -2,6 +2,9 @@ package com.example.autoservice.service.impl;
 
 import com.example.autoservice.dto.AutoImagenRequestDTO;
 import com.example.autoservice.dto.AutoImagenResponseDTO;
+import com.example.autoservice.exception.InvalidCatalogRequestException;
+import com.example.autoservice.exception.ResourceConflictException;
+import com.example.autoservice.exception.ResourceNotFoundException;
 import com.example.autoservice.mapper.AutoImagenMapper;
 import com.example.autoservice.model.Auto;
 import com.example.autoservice.model.AutoImagen;
@@ -88,10 +91,29 @@ class AutoImagenServiceImplTest {
 
         when(autoRepositoy.findById(autoId)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> autoImagenService.agregarImagen(autoId, requestDTO));
 
-        assertEquals("No se encontro el auto: 99", exception.getMessage());
+        assertEquals("Auto no encontrado con id: 99", exception.getMessage());
+        verify(autoImagenRepository, never()).save(any(AutoImagen.class));
+    }
+
+    @Test
+    void agregarImagen_deberiaLanzarConflictoSiOrdenYaExiste() {
+        Long autoId = 1L;
+        Auto auto = Auto.builder().id(autoId).build();
+        AutoImagenRequestDTO requestDTO = AutoImagenRequestDTO.builder()
+                .url("https://cdn.test/auto-1.jpg")
+                .orden(1)
+                .build();
+
+        when(autoRepositoy.findById(autoId)).thenReturn(Optional.of(auto));
+        when(autoImagenRepository.existsByAutoIdAndOrden(autoId, 1)).thenReturn(true);
+
+        ResourceConflictException exception = assertThrows(ResourceConflictException.class,
+                () -> autoImagenService.agregarImagen(autoId, requestDTO));
+
+        assertEquals("Ya existe una imagen con el orden: 1", exception.getMessage());
         verify(autoImagenRepository, never()).save(any(AutoImagen.class));
     }
 
@@ -193,7 +215,7 @@ class AutoImagenServiceImplTest {
         when(autoRepositoy.findById(autoId)).thenReturn(Optional.of(auto));
         when(autoImagenRepository.findById(imagenId)).thenReturn(Optional.of(imagen));
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        InvalidCatalogRequestException exception = assertThrows(InvalidCatalogRequestException.class,
                 () -> autoImagenService.establecerComoPortada(autoId, imagenId));
 
         assertEquals("La imagen no pertenece a este auto", exception.getMessage());
@@ -227,5 +249,14 @@ class AutoImagenServiceImplTest {
         String resultado = autoImagenService.obtenerPortada(autoId);
 
         assertNull(resultado);
+    }
+
+    @Test
+    void editarImagen_deberiaLanzarExcepcionSiOrdenEsInvalido() {
+        InvalidCatalogRequestException exception = assertThrows(InvalidCatalogRequestException.class,
+                () -> autoImagenService.editarImagen(1L, AutoImagenRequestDTO.builder().url("nueva.jpg").orden(0).build()));
+
+        assertEquals("orden debe ser mayor que 0", exception.getMessage());
+        verify(autoImagenRepository, never()).findById(any());
     }
 }
