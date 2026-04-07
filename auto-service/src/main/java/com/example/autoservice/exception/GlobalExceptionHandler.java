@@ -38,6 +38,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(InvalidCatalogRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCatalogRequest(InvalidCatalogRequestException ex) {
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Solicitud invalida",
+                ex.getMessage()
+        );
+    }
+
     @ExceptionHandler(InvalidSearchFilterException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidSearchFilter(InvalidSearchFilterException ex) {
         return buildErrorResponse(
@@ -61,6 +70,15 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 "Referencia invalida",
+                ex.getMessage()
+        );
+    }
+
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceConflict(ResourceConflictException ex) {
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                "Conflicto",
                 ex.getMessage()
         );
     }
