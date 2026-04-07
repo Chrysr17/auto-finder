@@ -3,6 +3,7 @@ package com.example.autoservice.controller;
 import com.example.autoservice.dto.MarcaRequestDTO;
 import com.example.autoservice.dto.MarcaResponseDTO;
 import com.example.autoservice.service.MarcaService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +28,11 @@ public class MarcaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<MarcaResponseDTO> buscarPorId(@PathVariable Long id) {
-        return marcaService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(marcaService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<MarcaResponseDTO> registrar(@RequestBody MarcaRequestDTO marcaRequestDTO){
+    public ResponseEntity<MarcaResponseDTO> registrar(@Valid @RequestBody MarcaRequestDTO marcaRequestDTO){
         MarcaResponseDTO nueva =  marcaService.registrar(marcaRequestDTO);
         return  ResponseEntity.status(HttpStatus.CREATED).body(nueva);
     }
