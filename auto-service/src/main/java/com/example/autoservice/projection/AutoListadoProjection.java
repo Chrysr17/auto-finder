@@ -4,7 +4,13 @@ public interface AutoListadoProjection {
     Long getId();
     String getColor();
     Double getPrecio();
+    Double getPrecioReferenciaActual();
+    Double getPrecioSalidaEstimado();
     Integer getAnioFabricacion();
+    String getMotor();
+    Integer getCaballosFuerza();
+    Integer getVelocidadMaxima();
+    String getTipoCombustible();
 
     Long getMarcaId();
     String getMarcaNombre();
