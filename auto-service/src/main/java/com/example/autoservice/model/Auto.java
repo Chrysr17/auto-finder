@@ -20,8 +20,44 @@ public class Auto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Double precio;
+    private Double precioReferenciaActual;
+    private Double precioSalidaEstimado;
     private String color;
+    private String motor;
+
+    @Column(name = "cilindrada_cc")
+    private Integer cilindradaCc;
+
+    @Column(name = "caballos_fuerza")
+    private Integer caballosFuerza;
+
+    @Column(name = "torque_nm")
+    private Integer torqueNm;
+
+    private Double consumoCiudad;
+    private Double consumoCarretera;
+    private Integer velocidadMaxima;
+
+    @Column(name = "aceleracion_0_100")
+    private Double aceleracionCeroACien;
+
+    private String tipoCombustible;
+    private String transmision;
+    private String traccion;
+
+    @Column(name = "peso_kg")
+    private Integer pesoKg;
+
+    private Integer puertas;
+    private String moneda;
+
+    @Column(columnDefinition = "TEXT")
+    private String descripcionValor;
+
+    @Column(columnDefinition = "TEXT")
+    private String resumen;
 
     @Column(name = "año_fabricacion")
     private Integer anioFabricacion;
