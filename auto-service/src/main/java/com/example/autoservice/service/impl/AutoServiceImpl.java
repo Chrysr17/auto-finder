@@ -117,7 +117,25 @@ public class AutoServiceImpl implements AutoService {
 
         existente.setColor(dto.getColor());
         existente.setPrecio(dto.getPrecio());
+        existente.setPrecioReferenciaActual(dto.getPrecioReferenciaActual());
+        existente.setPrecioSalidaEstimado(dto.getPrecioSalidaEstimado());
         existente.setAnioFabricacion(dto.getAnioFabricacion());
+        existente.setMotor(dto.getMotor());
+        existente.setCilindradaCc(dto.getCilindradaCc());
+        existente.setCaballosFuerza(dto.getCaballosFuerza());
+        existente.setTorqueNm(dto.getTorqueNm());
+        existente.setConsumoCiudad(dto.getConsumoCiudad());
+        existente.setConsumoCarretera(dto.getConsumoCarretera());
+        existente.setVelocidadMaxima(dto.getVelocidadMaxima());
+        existente.setAceleracionCeroACien(dto.getAceleracionCeroACien());
+        existente.setTipoCombustible(dto.getTipoCombustible());
+        existente.setTransmision(dto.getTransmision());
+        existente.setTraccion(dto.getTraccion());
+        existente.setPesoKg(dto.getPesoKg());
+        existente.setPuertas(dto.getPuertas());
+        existente.setMoneda(dto.getMoneda());
+        existente.setDescripcionValor(dto.getDescripcionValor());
+        existente.setResumen(dto.getResumen());
 
         if (dto.getMarcaId() != null) {
             existente.setMarca(marcaRepository.findById(dto.getMarcaId())
@@ -251,14 +269,57 @@ public class AutoServiceImpl implements AutoService {
     }
 
     private void validateBaseFields(AutoCreateRequestDTO dto) {
-        validateBaseFields(dto.getColor(), dto.getPrecio(), dto.getAnioFabricacion());
+        validateBaseFields(
+                dto.getColor(),
+                dto.getPrecio(),
+                dto.getAnioFabricacion(),
+                dto.getPrecioReferenciaActual(),
+                dto.getPrecioSalidaEstimado(),
+                dto.getCilindradaCc(),
+                dto.getCaballosFuerza(),
+                dto.getTorqueNm(),
+                dto.getConsumoCiudad(),
+                dto.getConsumoCarretera(),
+                dto.getVelocidadMaxima(),
+                dto.getAceleracionCeroACien(),
+                dto.getPesoKg(),
+                dto.getPuertas()
+        );
     }
 
     private void validateBaseFields(AutoUpdateRequestDTO dto) {
-        validateBaseFields(dto.getColor(), dto.getPrecio(), dto.getAnioFabricacion());
+        validateBaseFields(
+                dto.getColor(),
+                dto.getPrecio(),
+                dto.getAnioFabricacion(),
+                dto.getPrecioReferenciaActual(),
+                dto.getPrecioSalidaEstimado(),
+                dto.getCilindradaCc(),
+                dto.getCaballosFuerza(),
+                dto.getTorqueNm(),
+                dto.getConsumoCiudad(),
+                dto.getConsumoCarretera(),
+                dto.getVelocidadMaxima(),
+                dto.getAceleracionCeroACien(),
+                dto.getPesoKg(),
+                dto.getPuertas()
+        );
     }
 
-    private void validateBaseFields(String color, Double precio, Integer anioFabricacion) {
+    private void validateBaseFields(String color,
+                                    Double precio,
+                                    Integer anioFabricacion,
+                                    Double precioReferenciaActual,
+                                    Double precioSalidaEstimado,
+                                    Integer cilindradaCc,
+                                    Integer caballosFuerza,
+                                    Integer torqueNm,
+                                    Double consumoCiudad,
+                                    Double consumoCarretera,
+                                    Integer velocidadMaxima,
+                                    Double aceleracionCeroACien,
+                                    Integer pesoKg,
+                                    Integer puertas) {
         if (color == null || color.isBlank()) {
             throw new InvalidAutoRequestException("color es obligatorio");
         }
@@ -280,6 +341,24 @@ public class AutoServiceImpl implements AutoService {
             throw new InvalidAutoRequestException(
                     "anioFabricacion debe estar entre " + MIN_FABRICATION_YEAR + " y " + maxSupportedYear
             );
+        }
+
+        validatePositiveIfPresent(precioReferenciaActual, "precioReferenciaActual");
+        validatePositiveIfPresent(precioSalidaEstimado, "precioSalidaEstimado");
+        validatePositiveIfPresent(cilindradaCc, "cilindradaCc");
+        validatePositiveIfPresent(caballosFuerza, "caballosFuerza");
+        validatePositiveIfPresent(torqueNm, "torqueNm");
+        validatePositiveIfPresent(consumoCiudad, "consumoCiudad");
+        validatePositiveIfPresent(consumoCarretera, "consumoCarretera");
+        validatePositiveIfPresent(velocidadMaxima, "velocidadMaxima");
+        validatePositiveIfPresent(aceleracionCeroACien, "aceleracionCeroACien");
+        validatePositiveIfPresent(pesoKg, "pesoKg");
+        validatePositiveIfPresent(puertas, "puertas");
+    }
+
+    private void validatePositiveIfPresent(Number value, String fieldName) {
+        if (value != null && value.doubleValue() <= 0) {
+            throw new InvalidAutoRequestException(fieldName + " debe ser mayor que 0");
         }
     }
 }
