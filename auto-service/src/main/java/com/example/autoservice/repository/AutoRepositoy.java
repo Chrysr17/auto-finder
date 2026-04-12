@@ -19,7 +19,13 @@ public interface AutoRepositoy extends JpaRepository<Auto, Long>, JpaSpecificati
             a.id as id,
             a.color as color,
             a.precio as precio,
+            a.precioReferenciaActual as precioReferenciaActual,
+            a.precioSalidaEstimado as precioSalidaEstimado,
             a.anioFabricacion as anioFabricacion,
+            a.motor as motor,
+            a.caballosFuerza as caballosFuerza,
+            a.velocidadMaxima as velocidadMaxima,
+            a.tipoCombustible as tipoCombustible,
 
             m.id as marcaId,
             m.nombre as marcaNombre,
