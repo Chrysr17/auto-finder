@@ -65,13 +65,19 @@ class AutoServiceImplTest {
 
     @Test
     void listarTodos_deberiaRetornarAutosConPortadaMapeados() {
-        AutoListadoProjection projection = crearProjection(1L, "Rojo", 25000.0, 2023,
-                10L, "Toyota", 20L, "Corolla", 30L, "Sedan", "portada.jpg");
+        AutoListadoProjection projection = crearProjection(1L, "Rojo", 25000.0, 24800.0, 18000.0, 2023,
+                "2.0L", 169, 210, "Gasolina", 10L, "Toyota", 20L, "Corolla", 30L, "Sedan", "portada.jpg");
         AutoResponseDTO responseDTO = AutoResponseDTO.builder()
                 .id(1L)
                 .color("Rojo")
                 .precio(25000.0)
+                .precioReferenciaActual(24800.0)
+                .precioSalidaEstimado(18000.0)
                 .anioFabricacion(2023)
+                .motor("2.0L")
+                .caballosFuerza(169)
+                .velocidadMaxima(210)
+                .tipoCombustible("Gasolina")
                 .marcaNombre("Toyota")
                 .modeloNombre("Corolla")
                 .categoriaNombre("Sedan")
@@ -86,6 +92,8 @@ class AutoServiceImplTest {
         assertEquals(1, resultado.size());
         assertEquals(1L, resultado.get(0).getId());
         assertEquals("Rojo", resultado.get(0).getColor());
+        assertEquals(24800.0, resultado.get(0).getPrecioReferenciaActual());
+        assertEquals("2.0L", resultado.get(0).getMotor());
         assertEquals("portada.jpg", resultado.get(0).getImagenPortadaUrl());
     }
 
@@ -510,7 +518,13 @@ class AutoServiceImplTest {
             Long id,
             String color,
             Double precio,
+            Double precioReferenciaActual,
+            Double precioSalidaEstimado,
             Integer anioFabricacion,
+            String motor,
+            Integer caballosFuerza,
+            Integer velocidadMaxima,
+            String tipoCombustible,
             Long marcaId,
             String marcaNombre,
             Long modeloId,
@@ -536,8 +550,38 @@ class AutoServiceImplTest {
             }
 
             @Override
+            public Double getPrecioReferenciaActual() {
+                return precioReferenciaActual;
+            }
+
+            @Override
+            public Double getPrecioSalidaEstimado() {
+                return precioSalidaEstimado;
+            }
+
+            @Override
             public Integer getAnioFabricacion() {
                 return anioFabricacion;
+            }
+
+            @Override
+            public String getMotor() {
+                return motor;
+            }
+
+            @Override
+            public Integer getCaballosFuerza() {
+                return caballosFuerza;
+            }
+
+            @Override
+            public Integer getVelocidadMaxima() {
+                return velocidadMaxima;
+            }
+
+            @Override
+            public String getTipoCombustible() {
+                return tipoCombustible;
             }
 
             @Override
