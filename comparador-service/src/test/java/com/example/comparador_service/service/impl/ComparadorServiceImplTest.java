@@ -31,82 +31,73 @@ class ComparadorServiceImplTest {
     private ComparadorServiceImpl comparadorService;
 
     @Test
-    void compararAutos_deberiaRetornarComparacionGeneralSinOrdenEspecial() {
-        AutoDTO auto1 = crearAuto(1L, "Rojo", 22000.0, 2022, "Toyota", "Corolla", "Sedan", "img-1");
-        AutoDTO auto2 = crearAuto(2L, "Azul", 18000.0, 2020, "Honda", "Civic", "Sedan", "img-2");
+    void compararAutos_deberiaRetornarComparacionGeneralEnriquecida() {
+        AutoDTO auto1 = crearAutoBase(1L, "Toyota", "Corolla", "Sedan", 22000.0, 26000.0, 24000.0,
+                2022, 180, 10.0, 7.0, 230, "2.0L", "USD", "El valor actual refleja alta demanda", "Balanceado");
+        AutoDTO auto2 = crearAutoBase(2L, "Honda", "Civic", "Sedan", 18000.0, 21000.0, 20000.0,
+                2020, 160, 9.0, 6.0, 210, "1.5 Turbo", "USD", null, "Eficiente");
 
         when(autoClient.obtenerAuto(1L)).thenReturn(auto1);
         when(autoClient.obtenerAuto(2L)).thenReturn(auto2);
 
         ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), null);
 
-        assertEquals(2, resultado.getAutosComparados().size());
         assertEquals("general", resultado.getCriterio());
+        assertEquals("simple", resultado.getTipoComparacion());
+        assertEquals("USD", resultado.getMoneda());
+        assertEquals(2, resultado.getAutosComparados().size());
         assertEquals(1L, resultado.getAutosComparados().get(0).getId());
-        assertEquals(22000.0, resultado.getAutosComparados().get(0).getPrecio());
-        assertEquals(2022, resultado.getAutosComparados().get(0).getAnioFabricacion());
-        assertEquals("Rojo", resultado.getAutosComparados().get(0).getColor());
-        assertEquals("Sedan", resultado.getAutosComparados().get(0).getCategoriaNombre());
-        assertEquals("img-1", resultado.getAutosComparados().get(0).getImagenPortadaUrl());
+        assertEquals(180, resultado.getAutosComparados().get(0).getCaballosFuerza());
+        assertNotNull(resultado.getAutosComparados().get(0).getFortalezas());
+        assertNotNull(resultado.getAtributosComparados());
+        assertEquals("precio", resultado.getAtributosComparados().get(0).getClave());
+        assertNotNull(resultado.getDiferenciasClave());
+        assertNotNull(resultado.getContextoValor());
+        assertNotNull(resultado.getRanking());
+        assertEquals(1, resultado.getRanking().get(0).getPosicion());
     }
 
     @Test
-    void compararAutos_deberiaOrdenarPorPrecioYMapearCamposEsperados() {
-        AutoDTO auto1 = crearAuto(1L, "Rojo", 22000.0, 2022, "Toyota", "Corolla", "Sedan", "img-1");
-        AutoDTO auto2 = crearAuto(2L, "Azul", 18000.0, 2020, "Honda", "Civic", "Hatchback", "img-2");
+    void compararAutos_deberiaOrdenarPorHpYGenerarRankingAvanzado() {
+        AutoDTO auto1 = crearAutoBase(1L, "Toyota", "Supra", "Coupe", 55000.0, 62000.0, 58000.0,
+                2021, 382, 13.0, 9.0, 250, "3.0 Turbo", "USD", null, "Deportivo");
+        AutoDTO auto2 = crearAutoBase(2L, "Audi", "TT", "Coupe", 50000.0, 54000.0, 52000.0,
+                2020, 228, 11.0, 8.0, 250, "2.0 TFSI", "USD", null, "Compacto");
 
         when(autoClient.obtenerAuto(1L)).thenReturn(auto1);
         when(autoClient.obtenerAuto(2L)).thenReturn(auto2);
 
-        ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "precio");
+        ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "hp");
 
-        assertEquals("precio", resultado.getCriterio());
-        assertEquals(2L, resultado.getAutosComparados().get(0).getId());
-        assertEquals(18000.0, resultado.getAutosComparados().get(0).getPrecio());
-        assertEquals("Azul", resultado.getAutosComparados().get(0).getColor());
-        assertEquals("Hatchback", resultado.getAutosComparados().get(0).getCategoriaNombre());
-        assertEquals("img-2", resultado.getAutosComparados().get(0).getImagenPortadaUrl());
-        assertNull(resultado.getAutosComparados().get(0).getAnioFabricacion());
+        assertEquals("hp", resultado.getCriterio());
+        assertEquals("avanzada", resultado.getTipoComparacion());
+        assertEquals(1L, resultado.getAutosComparados().get(0).getId());
+        assertEquals(382, resultado.getAutosComparados().get(0).getCaballosFuerza());
+        assertEquals("hp", resultado.getAtributosComparados().get(0).getClave());
+        assertEquals(1L, resultado.getDiferenciasClave().get(0).getAutoIdGanador());
+        assertEquals(1L, resultado.getRanking().get(0).getAutoId());
+        assertEquals("Ordenado por potencia descendente", resultado.getRanking().get(0).getMotivo());
     }
 
     @Test
-    void compararAutos_deberiaOrdenarPorAnioYMapearCamposEsperados() {
-        AutoDTO auto1 = crearAuto(1L, "Rojo", 22000.0, 2022, "Toyota", "Corolla", "Sedan", "img-1");
-        AutoDTO auto2 = crearAuto(2L, "Azul", 18000.0, 2020, "Honda", "Civic", "Hatchback", "img-2");
+    void compararAutos_deberiaOrdenarPorPrecioActualAproximado() {
+        AutoDTO auto1 = crearAutoBase(1L, "Porsche", "944", "Coupe", 18000.0, 45000.0, 28000.0,
+                1987, 163, 12.0, 8.0, 220, "2.5L", "USD", "El precio actual depende del estado original", "Clasico");
+        AutoDTO auto2 = crearAutoBase(2L, "Mazda", "MX-5", "Convertible", 17000.0, 32000.0, 24000.0,
+                1990, 116, 9.0, 7.0, 195, "1.6L", "USD", null, "Ligero");
 
         when(autoClient.obtenerAuto(1L)).thenReturn(auto1);
         when(autoClient.obtenerAuto(2L)).thenReturn(auto2);
 
-        ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "anio");
+        ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "precioActualAproximado");
 
-        assertEquals("anio", resultado.getCriterio());
+        assertEquals("precioactualaproximado", resultado.getCriterio());
+        assertEquals("avanzada", resultado.getTipoComparacion());
         assertEquals(2L, resultado.getAutosComparados().get(0).getId());
-        assertEquals(2020, resultado.getAutosComparados().get(0).getAnioFabricacion());
-        assertEquals("Azul", resultado.getAutosComparados().get(0).getColor());
-        assertEquals("Hatchback", resultado.getAutosComparados().get(0).getCategoriaNombre());
-        assertEquals("img-2", resultado.getAutosComparados().get(0).getImagenPortadaUrl());
-        assertNull(resultado.getAutosComparados().get(0).getPrecio());
-    }
-
-    @Test
-    void compararAutos_deberiaOrdenarPorMarcaIgnorandoMayusculasYMapearCamposEsperados() {
-        AutoDTO auto1 = crearAuto(1L, "Rojo", 22000.0, 2022, "toyota", "Corolla", "Sedan", "img-1");
-        AutoDTO auto2 = crearAuto(2L, "Azul", 18000.0, 2020, "Audi", "A3", "Hatchback", "img-2");
-
-        when(autoClient.obtenerAuto(1L)).thenReturn(auto1);
-        when(autoClient.obtenerAuto(2L)).thenReturn(auto2);
-
-        ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "MARCA");
-
-        assertEquals("marca", resultado.getCriterio());
-        assertEquals(2L, resultado.getAutosComparados().get(0).getId());
-        assertEquals("Audi", resultado.getAutosComparados().get(0).getMarcaNombre());
-        assertEquals(18000.0, resultado.getAutosComparados().get(0).getPrecio());
-        assertEquals("Azul", resultado.getAutosComparados().get(0).getColor());
-        assertEquals("Hatchback", resultado.getAutosComparados().get(0).getCategoriaNombre());
-        assertEquals("img-2", resultado.getAutosComparados().get(0).getImagenPortadaUrl());
-        assertNull(resultado.getAutosComparados().get(0).getAnioFabricacion());
-        assertNotNull(resultado.getAutosComparados().get(0).getModeloNombre());
+        assertEquals(32000.0, resultado.getAutosComparados().get(0).getPrecioReferenciaActual());
+        assertEquals("precioactualaproximado", resultado.getAtributosComparados().get(0).getClave());
+        assertEquals("precioSalidaEstimado", resultado.getContextoValor().getCriterioPrecioSecundario());
+        assertEquals(2L, resultado.getRanking().get(0).getAutoId());
     }
 
     @Test
@@ -132,13 +123,15 @@ class ComparadorServiceImplTest {
         InvalidComparisonRequestException exception = assertThrows(InvalidComparisonRequestException.class,
                 () -> comparadorService.compararAutos(List.of(1L, 2L), "potencia"));
 
-        assertEquals("criterio no soportado. Valores permitidos: general, precio, anio, marca", exception.getMessage());
+        assertEquals("criterio no soportado. Valores permitidos: general, precio, anio, marca, categoria, motor, hp, rendimiento, velocidadMaxima, precioSalidaEstimado, precioActualAproximado",
+                exception.getMessage());
         verify(autoClient, never()).obtenerAuto(1L);
     }
 
     @Test
     void compararAutos_deberiaLanzarExcepcionSiAutoNoExiste() {
-        when(autoClient.obtenerAuto(1L)).thenReturn(crearAuto(1L, "Rojo", 22000.0, 2022, "Toyota", "Corolla", "Sedan", "img-1"));
+        when(autoClient.obtenerAuto(1L)).thenReturn(crearAutoBase(1L, "Toyota", "Corolla", "Sedan",
+                22000.0, 26000.0, 24000.0, 2022, 180, 10.0, 7.0, 230, "2.0L", "USD", null, null));
         when(autoClient.obtenerAuto(2L)).thenReturn(null);
 
         RelatedResourceNotFoundException exception = assertThrows(RelatedResourceNotFoundException.class,
@@ -147,25 +140,51 @@ class ComparadorServiceImplTest {
         assertEquals("No se encontro el auto con id: 2", exception.getMessage());
     }
 
-    private AutoDTO crearAuto(
+    private AutoDTO crearAutoBase(
             Long id,
-            String color,
-            Double precio,
-            Integer anioFabricacion,
             String marcaNombre,
             String modeloNombre,
             String categoriaNombre,
-            String imagenPortadaUrl
+            Double precio,
+            Double precioReferenciaActual,
+            Double precioSalidaEstimado,
+            Integer anioFabricacion,
+            Integer caballosFuerza,
+            Double consumoCiudad,
+            Double consumoCarretera,
+            Integer velocidadMaxima,
+            String motor,
+            String moneda,
+            String descripcionValor,
+            String resumen
     ) {
         return AutoDTO.builder()
                 .id(id)
-                .color(color)
+                .color("Rojo")
                 .precio(precio)
+                .precioReferenciaActual(precioReferenciaActual)
+                .precioSalidaEstimado(precioSalidaEstimado)
                 .anioFabricacion(anioFabricacion)
+                .motor(motor)
+                .cilindradaCc(2000)
+                .caballosFuerza(caballosFuerza)
+                .torqueNm(caballosFuerza == null ? null : caballosFuerza * 2)
+                .consumoCiudad(consumoCiudad)
+                .consumoCarretera(consumoCarretera)
+                .velocidadMaxima(velocidadMaxima)
+                .aceleracionCeroACien(6.5)
+                .tipoCombustible("Gasolina")
+                .transmision("Manual")
+                .traccion("Trasera")
+                .pesoKg(1400)
+                .puertas(2)
+                .moneda(moneda)
+                .descripcionValor(descripcionValor)
+                .resumen(resumen)
                 .marcaNombre(marcaNombre)
                 .modeloNombre(modeloNombre)
                 .categoriaNombre(categoriaNombre)
-                .imagenPortadaUrl(imagenPortadaUrl)
+                .imagenPortadaUrl("img-" + id)
                 .build();
     }
 }
