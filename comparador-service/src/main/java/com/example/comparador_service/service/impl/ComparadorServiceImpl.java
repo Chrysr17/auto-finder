@@ -27,33 +27,33 @@ public class ComparadorServiceImpl implements ComparadorService {
 
     private static final String CRITERIO_GENERAL = "general";
     private static final String CRITERIO_PRECIO = "precio";
-    private static final String CRITERIO_ANIO = "anio";
+    private static final String CRITERIO_ANIO_FABRICACION = "aniofabricacion";
     private static final String CRITERIO_MARCA = "marca";
     private static final String CRITERIO_CATEGORIA = "categoria";
     private static final String CRITERIO_MOTOR = "motor";
-    private static final String CRITERIO_HP = "hp";
+    private static final String CRITERIO_CABALLOS_FUERZA = "caballosfuerza";
     private static final String CRITERIO_RENDIMIENTO = "rendimiento";
     private static final String CRITERIO_VELOCIDAD_MAXIMA = "velocidadmaxima";
     private static final String CRITERIO_PRECIO_SALIDA_ESTIMADO = "preciosalidaestimado";
-    private static final String CRITERIO_PRECIO_ACTUAL_APROXIMADO = "precioactualaproximado";
+    private static final String CRITERIO_PRECIO_REFERENCIA_ACTUAL = "precioreferenciaactual";
 
     private static final Set<String> CRITERIOS_PERMITIDOS = Set.of(
             CRITERIO_GENERAL,
             CRITERIO_PRECIO,
-            CRITERIO_ANIO,
+            CRITERIO_ANIO_FABRICACION,
             CRITERIO_MARCA,
             CRITERIO_CATEGORIA,
             CRITERIO_MOTOR,
-            CRITERIO_HP,
+            CRITERIO_CABALLOS_FUERZA,
             CRITERIO_RENDIMIENTO,
             CRITERIO_VELOCIDAD_MAXIMA,
             CRITERIO_PRECIO_SALIDA_ESTIMADO,
-            CRITERIO_PRECIO_ACTUAL_APROXIMADO
+            CRITERIO_PRECIO_REFERENCIA_ACTUAL
     );
 
     private static final String MENSAJE_CRITERIOS = "criterio no soportado. Valores permitidos: "
-            + "general, precio, anio, marca, categoria, motor, hp, rendimiento, velocidadMaxima, "
-            + "precioSalidaEstimado, precioActualAproximado";
+            + "general, precio, anioFabricacion, marca, categoria, motor, caballosFuerza, rendimiento, "
+            + "velocidadMaxima, precioSalidaEstimado, precioReferenciaActual";
 
     private final AutoClient autoClient;
 
@@ -163,23 +163,23 @@ public class ComparadorServiceImpl implements ComparadorService {
         if (CRITERIO_GENERAL.equals(criterio)) {
             agregarAtributo(atributos, autos, CRITERIO_PRECIO, "Precio de lista", "moneda", true, true, null,
                     AutoDTO::getPrecio, this::formatearMoneda, false);
-            agregarAtributo(atributos, autos, CRITERIO_PRECIO_ACTUAL_APROXIMADO, "Precio actual aproximado",
+            agregarAtributo(atributos, autos, CRITERIO_PRECIO_REFERENCIA_ACTUAL, "Precio actual aproximado",
                     "moneda", true, true, null, AutoDTO::getPrecioReferenciaActual, this::formatearMoneda, false);
-            agregarAtributo(atributos, autos, CRITERIO_HP, "Caballos de fuerza", "numero", true, true, "hp",
+            agregarAtributo(atributos, autos, CRITERIO_CABALLOS_FUERZA, "Caballos de fuerza", "numero", true, true, "hp",
                     AutoDTO::getCaballosFuerza, valor -> formatearNumeroConUnidad(valor, "hp"), true);
             agregarAtributo(atributos, autos, CRITERIO_RENDIMIENTO, "Rendimiento promedio", "decimal", true, true,
                     "L/100 km", this::calcularRendimientoPromedio, valor -> formatearDecimalConUnidad(valor, "L/100 km"), false);
             agregarAtributo(atributos, autos, CRITERIO_VELOCIDAD_MAXIMA, "Velocidad maxima", "numero", true, true,
                     "km/h", AutoDTO::getVelocidadMaxima, valor -> formatearNumeroConUnidad(valor, "km/h"), true);
-            agregarAtributo(atributos, autos, CRITERIO_ANIO, "Anio de fabricacion", "numero", false, true, null,
+            agregarAtributo(atributos, autos, CRITERIO_ANIO_FABRICACION, "Anio de fabricacion", "numero", false, true, null,
                     AutoDTO::getAnioFabricacion, this::formatearTexto, true);
             agregarAtributo(atributos, autos, CRITERIO_MOTOR, "Motorizacion", "texto", false, true, null,
                     AutoDTO::getMotor, this::formatearTexto, true);
         } else if (CRITERIO_PRECIO.equals(criterio)) {
             agregarAtributo(atributos, autos, CRITERIO_PRECIO, "Precio de lista", "moneda", true, true, null,
                     AutoDTO::getPrecio, this::formatearMoneda, false);
-        } else if (CRITERIO_ANIO.equals(criterio)) {
-            agregarAtributo(atributos, autos, CRITERIO_ANIO, "Anio de fabricacion", "numero", true, true, null,
+        } else if (CRITERIO_ANIO_FABRICACION.equals(criterio)) {
+            agregarAtributo(atributos, autos, CRITERIO_ANIO_FABRICACION, "Anio de fabricacion", "numero", true, true, null,
                     AutoDTO::getAnioFabricacion, this::formatearTexto, true);
         } else if (CRITERIO_MARCA.equals(criterio)) {
             agregarAtributo(atributos, autos, CRITERIO_MARCA, "Marca", "texto", true, true, null,
@@ -192,8 +192,8 @@ public class ComparadorServiceImpl implements ComparadorService {
                     AutoDTO::getMotor, this::formatearTexto, true);
             agregarAtributo(atributos, autos, "cilindrada", "Cilindrada", "numero", false, true, "cc",
                     AutoDTO::getCilindradaCc, valor -> formatearNumeroConUnidad(valor, "cc"), true);
-        } else if (CRITERIO_HP.equals(criterio)) {
-            agregarAtributo(atributos, autos, CRITERIO_HP, "Caballos de fuerza", "numero", true, true, "hp",
+        } else if (CRITERIO_CABALLOS_FUERZA.equals(criterio)) {
+            agregarAtributo(atributos, autos, CRITERIO_CABALLOS_FUERZA, "Caballos de fuerza", "numero", true, true, "hp",
                     AutoDTO::getCaballosFuerza, valor -> formatearNumeroConUnidad(valor, "hp"), true);
             agregarAtributo(atributos, autos, "torque", "Torque", "numero", false, true, "Nm",
                     AutoDTO::getTorqueNm, valor -> formatearNumeroConUnidad(valor, "Nm"), true);
@@ -212,8 +212,8 @@ public class ComparadorServiceImpl implements ComparadorService {
         } else if (CRITERIO_PRECIO_SALIDA_ESTIMADO.equals(criterio)) {
             agregarAtributo(atributos, autos, CRITERIO_PRECIO_SALIDA_ESTIMADO, "Precio de salida estimado", "moneda",
                     true, true, null, AutoDTO::getPrecioSalidaEstimado, this::formatearMoneda, false);
-        } else if (CRITERIO_PRECIO_ACTUAL_APROXIMADO.equals(criterio)) {
-            agregarAtributo(atributos, autos, CRITERIO_PRECIO_ACTUAL_APROXIMADO, "Precio actual aproximado", "moneda",
+        } else if (CRITERIO_PRECIO_REFERENCIA_ACTUAL.equals(criterio)) {
+            agregarAtributo(atributos, autos, CRITERIO_PRECIO_REFERENCIA_ACTUAL, "Precio actual aproximado", "moneda",
                     true, true, null, AutoDTO::getPrecioReferenciaActual, this::formatearMoneda, false);
             agregarAtributo(atributos, autos, CRITERIO_PRECIO_SALIDA_ESTIMADO, "Precio de salida estimado", "moneda",
                     false, true, null, AutoDTO::getPrecioSalidaEstimado, this::formatearMoneda, false);
@@ -302,15 +302,15 @@ public class ComparadorServiceImpl implements ComparadorService {
         }
         if (lider) {
             return switch (clave) {
-                case CRITERIO_HP -> "Entrega la cifra mas alta de potencia";
+                case CRITERIO_CABALLOS_FUERZA -> "Entrega la cifra mas alta de potencia";
                 case CRITERIO_RENDIMIENTO -> "Registra el consumo mas eficiente del grupo";
                 case CRITERIO_VELOCIDAD_MAXIMA -> "Marca la velocidad punta mas alta";
-                case CRITERIO_PRECIO, CRITERIO_PRECIO_SALIDA_ESTIMADO, CRITERIO_PRECIO_ACTUAL_APROXIMADO ->
+                case CRITERIO_PRECIO, CRITERIO_PRECIO_SALIDA_ESTIMADO, CRITERIO_PRECIO_REFERENCIA_ACTUAL ->
                         "Es la referencia economica mas baja entre los comparados";
                 default -> "Encabeza este atributo en la comparacion";
             };
         }
-        if (CRITERIO_PRECIO_ACTUAL_APROXIMADO.equals(clave) && auto.getDescripcionValor() != null && !auto.getDescripcionValor().isBlank()) {
+        if (CRITERIO_PRECIO_REFERENCIA_ACTUAL.equals(clave) && auto.getDescripcionValor() != null && !auto.getDescripcionValor().isBlank()) {
             return auto.getDescripcionValor();
         }
         return null;
@@ -370,15 +370,15 @@ public class ComparadorServiceImpl implements ComparadorService {
     private String construirMotivoRanking(AutoDTO auto, String criterio) {
         return switch (criterio) {
             case CRITERIO_PRECIO -> "Ordenado por precio de lista ascendente";
-            case CRITERIO_ANIO -> "Ordenado por anio de fabricacion ascendente";
+            case CRITERIO_ANIO_FABRICACION -> "Ordenado por anio de fabricacion ascendente";
             case CRITERIO_MARCA -> "Orden alfabetico por marca";
             case CRITERIO_CATEGORIA -> "Orden alfabetico por categoria";
             case CRITERIO_MOTOR -> "Orden alfabetico por motorizacion";
-            case CRITERIO_HP -> "Ordenado por potencia descendente";
+            case CRITERIO_CABALLOS_FUERZA -> "Ordenado por potencia descendente";
             case CRITERIO_RENDIMIENTO -> "Ordenado por consumo promedio ascendente";
             case CRITERIO_VELOCIDAD_MAXIMA -> "Ordenado por velocidad maxima descendente";
             case CRITERIO_PRECIO_SALIDA_ESTIMADO -> "Ordenado por precio de salida estimado ascendente";
-            case CRITERIO_PRECIO_ACTUAL_APROXIMADO -> "Ordenado por precio actual aproximado ascendente";
+            case CRITERIO_PRECIO_REFERENCIA_ACTUAL -> "Ordenado por precio actual aproximado ascendente";
             default -> "Vista general con datos tecnicos y de valor";
         };
     }
@@ -386,12 +386,12 @@ public class ComparadorServiceImpl implements ComparadorService {
     private Double calcularPuntaje(AutoDTO auto, String criterio) {
         return switch (criterio) {
             case CRITERIO_PRECIO -> auto.getPrecio();
-            case CRITERIO_ANIO -> auto.getAnioFabricacion() == null ? null : auto.getAnioFabricacion().doubleValue();
-            case CRITERIO_HP -> auto.getCaballosFuerza() == null ? null : auto.getCaballosFuerza().doubleValue();
+            case CRITERIO_ANIO_FABRICACION -> auto.getAnioFabricacion() == null ? null : auto.getAnioFabricacion().doubleValue();
+            case CRITERIO_CABALLOS_FUERZA -> auto.getCaballosFuerza() == null ? null : auto.getCaballosFuerza().doubleValue();
             case CRITERIO_RENDIMIENTO -> calcularRendimientoPromedio(auto);
             case CRITERIO_VELOCIDAD_MAXIMA -> auto.getVelocidadMaxima() == null ? null : auto.getVelocidadMaxima().doubleValue();
             case CRITERIO_PRECIO_SALIDA_ESTIMADO -> auto.getPrecioSalidaEstimado();
-            case CRITERIO_PRECIO_ACTUAL_APROXIMADO -> auto.getPrecioReferenciaActual();
+            case CRITERIO_PRECIO_REFERENCIA_ACTUAL -> auto.getPrecioReferenciaActual();
             default -> null;
         };
     }
@@ -418,7 +418,7 @@ public class ComparadorServiceImpl implements ComparadorService {
 
         return ComparacionDTO.ContextoValorDTO.builder()
                 .descripcionGeneral(descripcion)
-                .criterioPrecioPrincipal("precioActualAproximado")
+                .criterioPrecioPrincipal("precioReferenciaActual")
                 .criterioPrecioSecundario("precioSalidaEstimado")
                 .nota(nota)
                 .build();
@@ -433,13 +433,13 @@ public class ComparadorServiceImpl implements ComparadorService {
         return switch (criterio) {
             case CRITERIO_PRECIO -> "%s abre la comparacion con el precio de lista mas bajo."
                     .formatted(nombreCompleto(lider.getMarcaNombre(), lider.getModeloNombre()));
-            case CRITERIO_HP -> "%s encabeza la comparacion de potencia."
+            case CRITERIO_CABALLOS_FUERZA -> "%s encabeza la comparacion de potencia."
                     .formatted(nombreCompleto(lider.getMarcaNombre(), lider.getModeloNombre()));
             case CRITERIO_RENDIMIENTO -> "%s ofrece el mejor rendimiento promedio del grupo."
                     .formatted(nombreCompleto(lider.getMarcaNombre(), lider.getModeloNombre()));
             case CRITERIO_VELOCIDAD_MAXIMA -> "%s lidera por velocidad maxima."
                     .formatted(nombreCompleto(lider.getMarcaNombre(), lider.getModeloNombre()));
-            case CRITERIO_PRECIO_ACTUAL_APROXIMADO -> "%s aparece como la opcion de menor valor actual aproximado."
+            case CRITERIO_PRECIO_REFERENCIA_ACTUAL -> "%s aparece como la opcion de menor valor actual aproximado."
                     .formatted(nombreCompleto(lider.getMarcaNombre(), lider.getModeloNombre()));
             case CRITERIO_PRECIO_SALIDA_ESTIMADO -> "%s muestra la referencia de salida estimada mas baja."
                     .formatted(nombreCompleto(lider.getMarcaNombre(), lider.getModeloNombre()));
@@ -457,14 +457,14 @@ public class ComparadorServiceImpl implements ComparadorService {
     }
 
     private boolean esComparacionAvanzada(String criterio) {
-        return !Set.of(CRITERIO_GENERAL, CRITERIO_PRECIO, CRITERIO_ANIO, CRITERIO_MARCA).contains(criterio);
+        return !Set.of(CRITERIO_GENERAL, CRITERIO_PRECIO, CRITERIO_ANIO_FABRICACION, CRITERIO_MARCA).contains(criterio);
     }
 
     private Comparator<AutoDTO> obtenerComparador(String criterio) {
         return switch (criterio) {
             case CRITERIO_PRECIO -> Comparator.comparing(AutoDTO::getPrecio,
                     Comparator.nullsLast(Comparator.naturalOrder()));
-            case CRITERIO_ANIO -> Comparator.comparing(AutoDTO::getAnioFabricacion,
+            case CRITERIO_ANIO_FABRICACION -> Comparator.comparing(AutoDTO::getAnioFabricacion,
                     Comparator.nullsLast(Comparator.naturalOrder()));
             case CRITERIO_MARCA -> Comparator.comparing(AutoDTO::getMarcaNombre,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
@@ -472,7 +472,7 @@ public class ComparadorServiceImpl implements ComparadorService {
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
             case CRITERIO_MOTOR -> Comparator.comparing(AutoDTO::getMotor,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-            case CRITERIO_HP -> Comparator.comparing(AutoDTO::getCaballosFuerza,
+            case CRITERIO_CABALLOS_FUERZA -> Comparator.comparing(AutoDTO::getCaballosFuerza,
                             Comparator.nullsLast(Comparator.reverseOrder()))
                     .thenComparing(AutoDTO::getTorqueNm, Comparator.nullsLast(Comparator.reverseOrder()));
             case CRITERIO_RENDIMIENTO -> Comparator.comparing(this::calcularRendimientoPromedio,
@@ -482,7 +482,7 @@ public class ComparadorServiceImpl implements ComparadorService {
                     .thenComparing(AutoDTO::getAceleracionCeroACien, Comparator.nullsLast(Comparator.naturalOrder()));
             case CRITERIO_PRECIO_SALIDA_ESTIMADO -> Comparator.comparing(AutoDTO::getPrecioSalidaEstimado,
                     Comparator.nullsLast(Comparator.naturalOrder()));
-            case CRITERIO_PRECIO_ACTUAL_APROXIMADO -> Comparator.comparing(AutoDTO::getPrecioReferenciaActual,
+            case CRITERIO_PRECIO_REFERENCIA_ACTUAL -> Comparator.comparing(AutoDTO::getPrecioReferenciaActual,
                     Comparator.nullsLast(Comparator.naturalOrder()));
             default -> Comparator.comparing(AutoDTO::getId, Comparator.nullsLast(Comparator.naturalOrder()));
         };
@@ -567,9 +567,11 @@ public class ComparadorServiceImpl implements ComparadorService {
 
         String normalizado = criterio.trim().toLowerCase(Locale.ROOT);
         return switch (normalizado) {
+            case "anio", "aniofabricacion" -> CRITERIO_ANIO_FABRICACION;
+            case "hp", "caballosfuerza" -> CRITERIO_CABALLOS_FUERZA;
             case "velocidadmaxima" -> CRITERIO_VELOCIDAD_MAXIMA;
             case "preciosalidaestimado" -> CRITERIO_PRECIO_SALIDA_ESTIMADO;
-            case "precioactualaproximado", "precioreferenciaactual" -> CRITERIO_PRECIO_ACTUAL_APROXIMADO;
+            case "precioactualaproximado", "precioreferenciaactual" -> CRITERIO_PRECIO_REFERENCIA_ACTUAL;
             default -> normalizado;
         };
     }
