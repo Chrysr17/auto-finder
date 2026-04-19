@@ -23,18 +23,31 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RelatedResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleRelatedResourceNotFound(RelatedResourceNotFoundException ex) {
         return buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                "Referencia invalida",
+                HttpStatus.NOT_FOUND,
+                "Recurso no encontrado",
+                ex.getMessage()
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error interno del servidor",
                 ex.getMessage()
         );
     }
 
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String error, String message) {
-        return ResponseEntity.status(status).body(Map.of(
+        return ResponseEntity.status(status).body(errorResponse(status, error, message));
+    }
+
+    private Map<String, Object> errorResponse(HttpStatus status, String error, String message) {
+        return Map.of(
                 "timestamp", LocalDateTime.now(),
                 "status", status.value(),
                 "error", error,
                 "message", message
-        ));
+        );
     }
 }
