@@ -28,9 +28,10 @@ public class ComparadorController {
 
     @PostMapping
     @Operation(summary = "Compara autos por criterio simple o avanzado",
-                description = "Permite comparar dos o mas autos usando criterios simples como precio, anio o marca, "
-                    + "y criterios avanzados como motor, hp, rendimiento, velocidadMaxima, "
-                    + "precioSalidaEstimado y precioActualAproximado.")
+                description = "Permite comparar dos o mas autos usando criterios simples como precio, "
+                    + "anioFabricacion o marca, y criterios avanzados como motor, caballosFuerza, "
+                    + "rendimiento, velocidadMaxima, precioSalidaEstimado y precioReferenciaActual. "
+                    + "Tambien acepta alias legados como anio, hp y precioActualAproximado.")
     public ResponseEntity<ComparacionDTO> comparar(@RequestParam(required = false, defaultValue = "general")
                                                        String criterio, @RequestBody List<Long> ids){
         return ResponseEntity.ok(
