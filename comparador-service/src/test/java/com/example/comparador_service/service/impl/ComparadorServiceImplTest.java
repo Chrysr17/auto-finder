@@ -58,7 +58,7 @@ class ComparadorServiceImplTest {
     }
 
     @Test
-    void compararAutos_deberiaOrdenarPorHpYGenerarRankingAvanzado() {
+    void compararAutos_deberiaAceptarAliasHpYRetornarCriterioCanonicoCaballosFuerza() {
         AutoDTO auto1 = crearAutoBase(1L, "Toyota", "Supra", "Coupe", 55000.0, 62000.0, 58000.0,
                 2021, 382, 13.0, 9.0, 250, "3.0 Turbo", "USD", null, "Deportivo");
         AutoDTO auto2 = crearAutoBase(2L, "Audi", "TT", "Coupe", 50000.0, 54000.0, 52000.0,
@@ -69,18 +69,18 @@ class ComparadorServiceImplTest {
 
         ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "hp");
 
-        assertEquals("hp", resultado.getCriterio());
+        assertEquals("caballosfuerza", resultado.getCriterio());
         assertEquals("avanzada", resultado.getTipoComparacion());
         assertEquals(1L, resultado.getAutosComparados().get(0).getId());
         assertEquals(382, resultado.getAutosComparados().get(0).getCaballosFuerza());
-        assertEquals("hp", resultado.getAtributosComparados().get(0).getClave());
+        assertEquals("caballosfuerza", resultado.getAtributosComparados().get(0).getClave());
         assertEquals(1L, resultado.getDiferenciasClave().get(0).getAutoIdGanador());
         assertEquals(1L, resultado.getRanking().get(0).getAutoId());
         assertEquals("Ordenado por potencia descendente", resultado.getRanking().get(0).getMotivo());
     }
 
     @Test
-    void compararAutos_deberiaOrdenarPorPrecioActualAproximado() {
+    void compararAutos_deberiaAceptarAliasPrecioActualAproximadoYRetornarCriterioCanonicoPrecioReferenciaActual() {
         AutoDTO auto1 = crearAutoBase(1L, "Porsche", "944", "Coupe", 18000.0, 45000.0, 28000.0,
                 1987, 163, 12.0, 8.0, 220, "2.5L", "USD", "El precio actual depende del estado original", "Clasico");
         AutoDTO auto2 = crearAutoBase(2L, "Mazda", "MX-5", "Convertible", 17000.0, 32000.0, 24000.0,
@@ -91,12 +91,13 @@ class ComparadorServiceImplTest {
 
         ComparacionDTO resultado = comparadorService.compararAutos(List.of(1L, 2L), "precioActualAproximado");
 
-        assertEquals("precioactualaproximado", resultado.getCriterio());
+        assertEquals("precioreferenciaactual", resultado.getCriterio());
         assertEquals("avanzada", resultado.getTipoComparacion());
         assertEquals(2L, resultado.getAutosComparados().get(0).getId());
         assertEquals(32000.0, resultado.getAutosComparados().get(0).getPrecioReferenciaActual());
-        assertEquals("precioactualaproximado", resultado.getAtributosComparados().get(0).getClave());
+        assertEquals("precioreferenciaactual", resultado.getAtributosComparados().get(0).getClave());
         assertEquals("precioSalidaEstimado", resultado.getContextoValor().getCriterioPrecioSecundario());
+        assertEquals("precioReferenciaActual", resultado.getContextoValor().getCriterioPrecioPrincipal());
         assertEquals(2L, resultado.getRanking().get(0).getAutoId());
     }
 
@@ -123,7 +124,7 @@ class ComparadorServiceImplTest {
         InvalidComparisonRequestException exception = assertThrows(InvalidComparisonRequestException.class,
                 () -> comparadorService.compararAutos(List.of(1L, 2L), "potencia"));
 
-        assertEquals("criterio no soportado. Valores permitidos: general, precio, anio, marca, categoria, motor, hp, rendimiento, velocidadMaxima, precioSalidaEstimado, precioActualAproximado",
+        assertEquals("criterio no soportado. Valores permitidos: general, precio, anioFabricacion, marca, categoria, motor, caballosFuerza, rendimiento, velocidadMaxima, precioSalidaEstimado, precioReferenciaActual",
                 exception.getMessage());
         verify(autoClient, never()).obtenerAuto(1L);
     }
