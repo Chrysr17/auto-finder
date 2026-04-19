@@ -14,7 +14,13 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("API - ComparadorService")
                         .version("1.0")
-                        .description("Microservicio para la comparación de autos"));
+                        .description(
+                                "Microservicio para comparar autos con criterios simples y avanzados. "
+                                        + "Permite contrastar precio, año, marca y categoría, además de "
+                                        + "atributos técnicos como motor, hp, rendimiento y velocidad máxima. "
+                                        + "También incorpora contexto de valor con precio de salida estimado "
+                                        + "y precio actual aproximado para casos de autos clásicos o de colección."
+                        ));
 
     }
 
