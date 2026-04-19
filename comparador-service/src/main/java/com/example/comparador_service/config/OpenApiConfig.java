@@ -17,9 +17,9 @@ public class OpenApiConfig {
                         .description(
                                 "Microservicio para comparar autos con criterios simples y avanzados. "
                                         + "Permite contrastar precio, año, marca y categoría, además de "
-                                        + "atributos técnicos como motor, hp, rendimiento y velocidad máxima. "
+                                        + "atributos técnicos como motor, caballos de fuerza, rendimiento y velocidad máxima. "
                                         + "También incorpora contexto de valor con precio de salida estimado "
-                                        + "y precio actual aproximado para casos de autos clásicos o de colección."
+                                        + "y precio de referencia actual para casos de autos clásicos o de colección."
                         ));
 
     }
