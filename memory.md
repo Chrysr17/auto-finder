@@ -143,5 +143,657 @@ Este archivo funciona como memoria operativa del proyecto. Se usará para regist
 - Decisiones:
 - El siguiente paso de Fase 1 debe enfocarse en estandarizar errores CRUD y reemplazar `RuntimeException` genéricas en `auto-service`.
 
+### 2026-04-03 - incremento 6
+- Contexto: estandarización de errores CRUD en `auto-service`.
+- Cambio realizado:
+- `buscarPorId` pasó a lanzar `ResourceNotFoundException` cuando el auto no existe.
+- `registrar` y `actualizar` pasaron a lanzar `RelatedResourceNotFoundException` cuando `marca`, `modelo` o `categoria` no existen.
+- `eliminar` ahora valida existencia antes de borrar y lanza `ResourceNotFoundException` si el auto no existe.
+- `AutoController` dejó de construir `404` manualmente para `buscarPorId` y delega la respuesta al manejador global.
+- `GlobalExceptionHandler` ahora responde de forma consistente para:
+- filtros inválidos (`400`)
+- recurso no encontrado (`404`)
+- referencias inválidas (`400`)
+- Se actualizaron los tests unitarios de `AutoServiceImplTest` al nuevo contrato de excepciones.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/service/AutoService.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/AutoController.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/GlobalExceptionHandler.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/ResourceNotFoundException.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/RelatedResourceNotFoundException.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -Dtest=AutoServiceImplTest test` pasó correctamente en `auto-service`.
+- Decisiones:
+- El siguiente paso debe cerrar validaciones de negocio restantes y extender este patrón de errores al resto de microservicios en Fase 1.
+
+### 2026-04-03 - incremento 7
+- Contexto: cierre de validaciones de negocio restantes en `auto-service`.
+- Cambio realizado:
+- Se agregó `InvalidAutoRequestException` para solicitudes inválidas de alta y actualización.
+- `registrar` ahora valida:
+- `color` obligatorio y no vacío
+- `precio` obligatorio y mayor que 0
+- `anioFabricacion` obligatorio y dentro del rango `1886` a `anio actual + 1`
+- `marcaId`, `modeloId` y `categoriaId` obligatorios
+- `actualizar` ahora valida:
+- `color` obligatorio y no vacío
+- `precio` obligatorio y mayor que 0
+- `anioFabricacion` obligatorio y dentro del mismo rango válido
+- `GlobalExceptionHandler` responde `400` consistente para `InvalidAutoRequestException`.
+- Se ampliaron los tests unitarios para cubrir validaciones de color, precio, año y relaciones obligatorias.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/InvalidAutoRequestException.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/GlobalExceptionHandler.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -Dtest=AutoServiceImplTest test` pasó correctamente en `auto-service`.
+- Decisiones:
+- Fase 1 queda sólida en `auto-service` para búsqueda, validaciones y errores base.
+- El siguiente paso natural es propagar este patrón de validaciones, excepciones y manejo uniforme a `favorito-service`, `comparador-service` y `auth-service`.
+
+### 2026-04-03 - incremento 8
+- Contexto: endurecimiento de validación de entrada en `auto-service` mediante Bean Validation.
+- Cambio realizado:
+- Se agregaron anotaciones de validación en `AutoRequestDTO`:
+- `@NotBlank` para `color`
+- `@NotNull` y `@Positive` para `precio`
+- `@NotNull` y `@Min(1886)` para `anioFabricacion`
+- `@NotNull` para `marcaId`, `modeloId` y `categoriaId`
+- Se agregó `@Valid` en los endpoints `POST /api/autos` y `PUT /api/autos/{id}`.
+- `GlobalExceptionHandler` ahora maneja `MethodArgumentNotValidException` con payload consistente y detalle por campo.
+- Se mantiene la validación de servicio como segunda línea para reglas de negocio más específicas, incluyendo año máximo dinámico.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/AutoController.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/GlobalExceptionHandler.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- Decisiones:
+- `POST` y `PUT` quedan tratados como contratos completos en `auto-service`.
+- La validación ahora está repartida correctamente entre capa de entrada y capa de negocio.
+
+### 2026-04-03 - incremento 9
+- Contexto: separación explícita de contratos de creación y actualización en `auto-service`.
+- Cambio realizado:
+- Se reemplazó el uso compartido de `AutoRequestDTO` por:
+- `AutoCreateRequestDTO` para `POST /api/autos`
+- `AutoUpdateRequestDTO` para `PUT /api/autos/{id}`
+- Se ajustaron `AutoController`, `AutoService`, `AutoServiceImpl` y `AutoMapper` para usar los DTOs específicos.
+- Se mantuvo el comportamiento actual: tanto `POST` como `PUT` siguen siendo contratos completos.
+- Se actualizaron los tests unitarios de `AutoServiceImplTest` al nuevo contrato.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoCreateRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoUpdateRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/AutoController.java`
+- `auto-service/src/main/java/com/example/autoservice/service/AutoService.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/mapper/AutoMapper.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q -Dtest=AutoServiceImplTest test` pasó correctamente en `auto-service`.
+- Decisiones:
+- El contrato HTTP queda más claro para crecimiento futuro.
+- Si más adelante se quiere actualización parcial, el siguiente paso correcto sería agregar `PATCH` con un DTO específico.
+
+### 2026-04-05 - incremento 10
+- Contexto: extensión del patrón de validaciones y errores uniformes hacia `favorito-service` como continuación de la Fase 1.
+- Cambio realizado:
+- Se agregaron excepciones específicas para favoritos:
+- `InvalidFavoriteRequestException`
+- `RelatedResourceNotFoundException`
+- `ResourceNotFoundException`
+- `DuplicateFavoriteException`
+- Se agregó `GlobalExceptionHandler` en `favorito-service` con respuestas consistentes para:
+- solicitud inválida (`400`)
+- favorito inexistente (`404`)
+- referencia inválida a auto (`400`)
+- favorito duplicado (`409`)
+- `FavoritoServiceImpl` ahora valida:
+- `username` obligatorio y no vacío
+- `autoId` obligatorio y mayor que 0
+- `agregarFavorito` ya no lanza `RuntimeException` genérica y traduce correctamente `404` del `AutoClient` a error de referencia inválida.
+- `eliminarFavorito` ahora valida existencia previa y responde con error explícito cuando el favorito no existe.
+- Se ampliaron los tests unitarios para cubrir validación de `autoId`, duplicados y eliminación inexistente.
+- Archivos tocados:
+- `favorito-service/src/main/java/org/example/favoritoservice/service/impl/FavoritoServiceImpl.java`
+- `favorito-service/src/main/java/org/example/favoritoservice/exception/GlobalExceptionHandler.java`
+- `favorito-service/src/main/java/org/example/favoritoservice/exception/InvalidFavoriteRequestException.java`
+- `favorito-service/src/main/java/org/example/favoritoservice/exception/RelatedResourceNotFoundException.java`
+- `favorito-service/src/main/java/org/example/favoritoservice/exception/ResourceNotFoundException.java`
+- `favorito-service/src/main/java/org/example/favoritoservice/exception/DuplicateFavoriteException.java`
+- `favorito-service/src/test/java/org/example/favoritoservice/service/impl/FavoritoServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `favorito-service`.
+- `mvn -q -Dtest=FavoritoServiceImplTest test` pasó correctamente en `favorito-service`.
+- Decisiones:
+- El patrón de Fase 1 ya quedó propagado al flujo principal de favoritos.
+- El siguiente bloque razonable es aplicar el mismo criterio a `comparador-service` y después revisar errores de catálogo secundarios en `auto-service` (`marca`, `modelo`, `categoria`, `imagen`).
+
+### 2026-04-05 - incremento 11
+- Contexto: aplicación del patrón de validaciones y errores uniformes en `comparador-service`.
+- Cambio realizado:
+- Se agregaron excepciones específicas:
+- `InvalidComparisonRequestException`
+- `RelatedResourceNotFoundException`
+- Se agregó `GlobalExceptionHandler` con respuestas consistentes para:
+- solicitud inválida (`400`)
+- referencia inválida a auto (`400`)
+- `ComparadorServiceImpl` ahora valida:
+- lista de ids obligatoria y con al menos dos autos
+- ids no nulos, mayores que 0 y sin duplicados
+- `criterio` restringido a `general`, `precio`, `anio`, `marca`
+- Se normalizó el criterio de salida a minúsculas.
+- Se capturan correctamente autos inexistentes devueltos como `null` o `404` desde `auto-service`.
+- Se corrigió además un bug real detectado en test: la lista intermedia ahora es mutable antes de ordenar.
+- Se ampliaron los tests unitarios para cubrir ids insuficientes, duplicados, criterio inválido y auto inexistente.
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/service/impl/ComparadorServiceImpl.java`
+- `comparador-service/src/main/java/com/example/comparador_service/exception/GlobalExceptionHandler.java`
+- `comparador-service/src/main/java/com/example/comparador_service/exception/InvalidComparisonRequestException.java`
+- `comparador-service/src/main/java/com/example/comparador_service/exception/RelatedResourceNotFoundException.java`
+- `comparador-service/src/test/java/com/example/comparador_service/service/impl/ComparadorServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q -Dtest=ComparadorServiceImplTest test` pasó correctamente en `comparador-service`.
+- Decisiones:
+- El comparador simple queda cerrado a entradas válidas y con errores controlados, lo cual deja la Fase 1 lista en este microservicio.
+
+### 2026-04-05 - incremento 12
+- Contexto: revisión de servicios secundarios pendientes en `auto-service`.
+- Cambio realizado:
+- Se agregaron excepciones transversales:
+- `InvalidCatalogRequestException`
+- `ResourceConflictException`
+- `GlobalExceptionHandler` ahora cubre también:
+- solicitudes inválidas de catálogo (`400`)
+- conflictos de recurso (`409`)
+- Se eliminaron respuestas `404` manuales con `Optional` en controladores de `marca`, `modelo` y `categoria`, delegando el contrato al manejador global.
+- Se agregaron validaciones de Bean Validation en:
+- `MarcaRequestDTO`
+- `ModeloRequestDTO`
+- `CategoriaRequestDTO`
+- Se agregó `@Valid` en controladores de `marca`, `modelo` y `categoria`.
+- `MarcaServiceImpl`, `ModeloServiceImpl` y `CategoriaServiceImpl` ahora validan ids y payloads, y lanzan excepciones específicas para:
+- ids inválidos (`400`)
+- recurso inexistente (`404`)
+- referencia de marca inválida en modelo (`400`)
+- `AutoImagenServiceImpl` dejó de usar `RuntimeException` genéricas y ahora responde con:
+- `404` para auto o imagen inexistente
+- `409` para orden duplicado
+- `400` para ids inválidos, orden inválido o imagen ajena al auto
+- Se actualizaron los tests unitarios de `MarcaServiceImplTest`, `ModeloServiceImplTest`, `CategoriaServiceImplTest` y `AutoImagenServiceImplTest` al nuevo contrato.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/controller/MarcaController.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/ModeloController.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/CategoriaController.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/MarcaRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/ModeloRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/CategoriaRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/GlobalExceptionHandler.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/InvalidCatalogRequestException.java`
+- `auto-service/src/main/java/com/example/autoservice/exception/ResourceConflictException.java`
+- `auto-service/src/main/java/com/example/autoservice/service/MarcaService.java`
+- `auto-service/src/main/java/com/example/autoservice/service/ModeloService.java`
+- `auto-service/src/main/java/com/example/autoservice/service/CategoriaService.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/MarcaServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/ModeloServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/CategoriaServiceImpl.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoImagenServiceImpl.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/MarcaServiceImplTest.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/ModeloServiceImplTest.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/CategoriaServiceImplTest.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoImagenServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q "-Dtest=MarcaServiceImplTest,ModeloServiceImplTest,CategoriaServiceImplTest,AutoImagenServiceImplTest" test` pasó correctamente en `auto-service`.
+- Decisiones:
+- Los servicios secundarios principales del catálogo ya quedaron alineados con el patrón de Fase 1.
+- El siguiente foco razonable es revisar si todavía vale la pena endurecer `auth-service` en la misma línea o empezar la Fase 2 sobre comparación enriquecida.
+
+### 2026-04-05 - incremento 13
+- Contexto: cierre de Fase 1 en `auth-service` con el mismo patrón de validaciones, errores consistentes y endurecimiento del registro público.
+- Cambio realizado:
+- Se agregaron excepciones específicas:
+- `InvalidAuthRequestException`
+- `ResourceConflictException`
+- `GlobalExceptionHandler` ahora maneja:
+- errores de Bean Validation (`400`) con detalle por campo
+- solicitudes inválidas de auth (`400`)
+- conflictos de recurso (`409`)
+- Se mantuvo el tratamiento actual para credenciales inválidas (`401`) y usuario no encontrado (`404`) en los puntos donde Spring Security ya interviene.
+- `AuthService` ahora valida en segunda línea:
+- solicitud de login obligatoria
+- `username` y `password` obligatorios en login
+- solicitud de registro obligatoria
+- `username`, `email` y `password` obligatorios en registro
+- Los duplicados de `username` y `email` pasaron de error genérico a conflicto explícito (`409`).
+- Se bloqueó el auto-registro con `rol=ADMIN` desde el endpoint público y se responde `400` cuando se intenta.
+- Se agregaron tests unitarios para:
+- login exitoso
+- login inválido por `username` vacío
+- registro exitoso con rol `USER` por defecto
+- conflicto por `username` duplicado
+- conflicto por `email` duplicado
+- intento inválido de registro como `ADMIN`
+- Archivos tocados:
+- `auth-service/src/main/java/com/example/authservice/service/AuthService.java`
+- `auth-service/src/main/java/com/example/authservice/exception/GlobalExceptionHandler.java`
+- `auth-service/src/main/java/com/example/authservice/exception/InvalidAuthRequestException.java`
+- `auth-service/src/main/java/com/example/authservice/exception/ResourceConflictException.java`
+- `auth-service/src/test/java/com/example/authservice/service/AuthServiceTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auth-service`.
+- `mvn -q -Dtest=AuthServiceTest test` pasó correctamente en `auth-service`.
+- Decisiones:
+- El endpoint público de registro deja de ser una vía de escalamiento a `ADMIN`.
+- Con este cambio, Fase 1 queda consistente en validaciones y manejo de errores en los microservicios principales del repositorio.
+
 ## Próxima actualización
-- Retomar los pendientes de Fase 1 en `auto-service`: estandarización de errores CRUD y cierre de validaciones de negocio restantes.
+- Iniciar Fase 2 con comparación enriquecida o priorizar nuevas capacidades de discovery sobre la base ya endurecida de Fase 1.
+
+### 2026-04-11 - definición funcional Fase 2
+- Contexto: aclaración de objetivo de producto para orientar la Fase 2.
+- Decisiones:
+- El producto debe parecerse más a una plataforma de exploración y descubrimiento de autos que a un marketplace de compra.
+- La comparación enriquecida debe priorizar ficha técnica, criterios comparables y contexto de valor, no flujo transaccional.
+- Los criterios candidatos más relevantes para Fase 2 pasan a ser `motor`, `hp`, `rendimiento`, `velocidadMaxima`, `precioSalidaEstimado` y `precioActualAproximado`, además de atributos ya existentes como `precio`, `anioFabricacion` y `categoria`.
+- Para autos antiguos, la experiencia debe explicar mejor el contexto del valor mostrando texto o metadata que distinga precio de salida estimado vs precio actual aproximado.
+- Siguiente paso:
+- Diseñar el contrato de comparación avanzada y ampliar el dominio de `auto-service` con atributos técnicos y de contexto histórico de precio.
+
+### 2026-04-11 - ampliación inicial de `auto-service` para Fase 2
+- Contexto: inicio de la ampliación del dominio de autos para soportar exploración técnica e histórica.
+- Cambio realizado:
+- Se amplió la entidad `Auto` con atributos técnicos y de contexto de valor:
+- `precioReferenciaActual`
+- `precioSalidaEstimado`
+- `motor`
+- `cilindradaCc`
+- `caballosFuerza`
+- `torqueNm`
+- `consumoCiudad`
+- `consumoCarretera`
+- `velocidadMaxima`
+- `aceleracionCeroACien`
+- `tipoCombustible`
+- `transmision`
+- `traccion`
+- `pesoKg`
+- `puertas`
+- `moneda`
+- `descripcionValor`
+- `resumen`
+- Se ampliaron `AutoCreateRequestDTO`, `AutoUpdateRequestDTO` y `AutoResponseDTO` para exponer esos campos en altas, ediciones y lecturas.
+- `AutoMapper` quedó alineado para mapear los nuevos atributos entre entidad y DTOs.
+- `AutoServiceImpl` ahora persiste y actualiza todos los nuevos campos, y valida que los valores numéricos opcionales sean mayores que 0 cuando vienen informados.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/model/Auto.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoCreateRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoUpdateRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoResponseDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/mapper/AutoMapper.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q -Dtest=AutoServiceImplTest test` pasó correctamente en `auto-service`.
+- Pendientes:
+- Extender filtros y ordenamiento de búsqueda para algunos de los nuevos atributos técnicos.
+- Definir si `precio` seguirá coexistiendo con `precioReferenciaActual` o si se migrará semánticamente.
+- Evaluar migrar montos de `Double` a un tipo monetario más preciso en una iteración posterior.
+- Siguiente paso:
+- Diseñar la segunda parte de la ampliación en `auto-service`: filtros por atributos técnicos y el contrato que consumirá `comparador-service`.
+
+### 2026-04-11 - ajuste de listado liviano para exploración
+- Contexto: revisión del uso real de `AutoListadoProjection` antes de seguir con la comparación avanzada.
+- Cambio realizado:
+- Se confirmó que `AutoListadoProjection` sí se usa en runtime para `GET /api/autos` mediante `listarAutosConPortada()`, no solo en tests.
+- Se mantuvo la proyección como contrato de listado liviano, pero se amplió con señales útiles para exploración rápida:
+- `precioReferenciaActual`
+- `precioSalidaEstimado`
+- `motor`
+- `caballosFuerza`
+- `velocidadMaxima`
+- `tipoCombustible`
+- Se actualizó la query del repositorio y el mapper para que el listado general ya devuelva esos campos sin cargar toda la ficha completa.
+- Se ajustó `AutoServiceImplTest` al nuevo contrato del listado.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/projection/AutoListadoProjection.java`
+- `auto-service/src/main/java/com/example/autoservice/repository/AutoRepositoy.java`
+- `auto-service/src/main/java/com/example/autoservice/mapper/AutoMapper.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q -Dtest=AutoServiceImplTest test` pasó correctamente en `auto-service`.
+- Decisiones:
+- `GET /api/autos` queda orientado a exploración rápida y no a detalle completo.
+- Los campos largos como `descripcionValor` y `resumen` siguen siendo más apropiados para el detalle por id y para comparación enriquecida.
+
+### 2026-04-17 - nuevo contrato base para comparación avanzada
+- Contexto: inicio de implementación del contrato de respuesta enriquecida en `comparador-service`.
+- Cambio realizado:
+- `ComparacionDTO` se amplió para soportar comparación avanzada sin romper el uso actual del comparador simple.
+- El DTO ahora contempla:
+- `tipoComparacion`
+- `resumen`
+- `moneda`
+- `atributosComparados`
+- `diferenciasClave`
+- `ranking`
+- `contextoValor`
+- Se modelaron clases internas para representar valores por atributo, diferencias destacadas, ranking y explicación de contexto de valor.
+- Se agregó `@JsonInclude(Include.NON_NULL)` para omitir campos aún no poblados mientras el servicio migra de la comparación simple a la enriquecida.
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/dto/ComparacionDTO.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- Siguiente paso:
+- Adaptar `AutoDTO` y `AutoComparadoDTO` al dominio técnico/histórico y luego actualizar `ComparadorServiceImpl` para poblar el nuevo contrato.
+
+### 2026-04-17 - ampliación de DTOs de auto en `comparador-service`
+- Contexto: continuación de la preparación del contrato para comparación avanzada.
+- Cambio realizado:
+- `AutoDTO` en `comparador-service` se alineó con los campos ricos que ya devuelve `auto-service` en su detalle por id.
+- Se agregaron atributos de contexto de valor y ficha técnica:
+- `precioReferenciaActual`
+- `precioSalidaEstimado`
+- `motor`
+- `cilindradaCc`
+- `caballosFuerza`
+- `torqueNm`
+- `consumoCiudad`
+- `consumoCarretera`
+- `velocidadMaxima`
+- `aceleracionCeroACien`
+- `tipoCombustible`
+- `transmision`
+- `traccion`
+- `pesoKg`
+- `puertas`
+- `moneda`
+- `descripcionValor`
+- `resumen`
+- `AutoComparadoDTO` también se amplió con esos campos y con listas opcionales de `fortalezas` y `alertas` para soportar highlights por auto.
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/dto/AutoDTO.java`
+- `comparador-service/src/main/java/com/example/comparador_service/dto/AutoComparadoDTO.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- Siguiente paso:
+- Reescribir `ComparadorServiceImpl` para aceptar nuevos criterios de comparación y poblar `ComparacionDTO` con atributos comparados, ranking y contexto de valor.
+
+### 2026-04-17 - implementación inicial de comparación avanzada en `comparador-service`
+- Contexto: activación del nuevo contrato enriquecido sobre el servicio real de comparación.
+- Cambio realizado:
+- `ComparadorServiceImpl` se reescribió para construir una respuesta enriquecida en lugar del mapper resumido por `if/else`.
+- Se mantienen los criterios previos y se agregan criterios nuevos:
+- `categoria`
+- `motor`
+- `hp`
+- `rendimiento`
+- `velocidadMaxima`
+- `precioSalidaEstimado`
+- `precioActualAproximado`
+- La respuesta ahora llena:
+- `tipoComparacion`
+- `resumen`
+- `moneda`
+- `atributosComparados`
+- `diferenciasClave`
+- `ranking`
+- `contextoValor`
+- `autosComparados` ahora devuelve también ficha técnica, contexto de valor y listas opcionales de `fortalezas` y `alertas`.
+- Se agregaron reglas básicas para:
+- ranking por criterio
+- atributo líder por comparación
+- diferencias clave limitadas
+- explicación de contexto entre precio histórico de salida y valor actual aproximado
+- Se reescribieron los tests de `ComparadorServiceImpl` para cubrir:
+- comparación general enriquecida
+- criterio `hp`
+- criterio `precioActualAproximado`
+- validaciones de ids y criterio inválido
+- manejo de auto inexistente
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/service/impl/ComparadorServiceImpl.java`
+- `comparador-service/src/test/java/com/example/comparador_service/service/impl/ComparadorServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q -Dtest=ComparadorServiceImplTest test` pasó correctamente en `comparador-service`.
+- Observación:
+- Maven emite warnings de Mockito por self-attaching del agente en JDK reciente, pero la suite pasa.
+- Siguiente paso:
+- Ajustar `ComparadorController` y documentación OpenAPI si se quiere exponer explícitamente los nuevos criterios en la API pública.
+
+### 2026-04-17 - ajuste del controlador para comparación avanzada
+- Contexto: alinear la capa HTTP con los criterios y contratos ya implementados en el servicio.
+- Cambio realizado:
+- `ComparadorController` ahora documenta el endpoint `POST /api/comparar` como comparación simple y avanzada.
+- Se añadieron descripciones y ejemplos OpenAPI para:
+- `criterio`
+- body con lista de ids
+- La documentación del parámetro `criterio` ya enumera los valores nuevos:
+- `categoria`
+- `motor`
+- `hp`
+- `rendimiento`
+- `velocidadMaxima`
+- `precioSalidaEstimado`
+- `precioActualAproximado`
+- Archivo tocado:
+- `comparador-service/src/main/java/com/example/comparador_service/controller/ComparadorController.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- Siguiente paso:
+- Si se quiere mejor discoverability en Swagger, ampliar también la descripción general de `OpenApiConfig` o agregar respuestas de error documentadas al controlador.
+
+### 2026-04-17 - ajuste de OpenAPI para describir comparación avanzada
+- Contexto: mejorar la discoverability de Swagger/OpenAPI tras habilitar criterios avanzados.
+- Cambio realizado:
+- `OpenApiConfig` ahora describe el microservicio como comparador simple y avanzado.
+- La descripción general menciona explícitamente:
+- criterios simples (`precio`, `año`, `marca`, `categoría`)
+- criterios técnicos (`motor`, `hp`, `rendimiento`, `velocidad máxima`)
+- contexto de valor (`precio de salida estimado` y `precio actual aproximado`)
+- Se dejó claro el caso de uso para autos clásicos o de colección.
+- Archivo tocado:
+- `comparador-service/src/main/java/com/example/comparador_service/config/OpenApiConfig.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- Siguiente paso:
+- Si hace falta más detalle en Swagger, documentar respuestas de error comunes (`400`, `404`) en `ComparadorController`.
+
+### 2026-04-17 - documentación y alineación de errores HTTP en comparador
+- Contexto: completar la documentación pública del endpoint de comparación con respuestas de error reales.
+- Cambio realizado:
+- `ComparadorController` ahora documenta respuestas `200`, `400` y `404` en OpenAPI con ejemplos JSON.
+- Se corrigió `GlobalExceptionHandler` para que `RelatedResourceNotFoundException` responda `404 Not Found` en lugar de `400`, alineando el comportamiento real con la semántica del error y con Swagger.
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/controller/ComparadorController.java`
+- `comparador-service/src/main/java/com/example/comparador_service/exception/GlobalExceptionHandler.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q -Dtest=ComparadorServiceImplTest test` pasó correctamente en `comparador-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente en JDK reciente, pero la suite pasa.
+- Siguiente paso:
+- Si se quiere cerrar mejor la API pública, agregar pruebas del `GlobalExceptionHandler` o tests web del controlador para validar `400/404` a nivel HTTP.
+
+### 2026-04-17 - cierre de `GlobalExceptionHandler` en comparador
+- Contexto: continuación del endurecimiento de la capa de errores tras simplificar documentación en el controlador.
+- Cambio realizado:
+- `GlobalExceptionHandler` ahora centraliza la construcción del payload de error mediante `errorResponse(...)`.
+- Se agregó manejo explícito de `Exception.class` para responder `500 Internal Server Error` con el mismo formato JSON.
+- Se añadieron pruebas unitarias directas para validar:
+- `400` con `InvalidComparisonRequestException`
+- `404` con `RelatedResourceNotFoundException`
+- `500` con excepción genérica
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/exception/GlobalExceptionHandler.java`
+- `comparador-service/src/test/java/com/example/comparador_service/exception/GlobalExceptionHandlerTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q '-Dtest=ComparadorServiceImplTest,GlobalExceptionHandlerTest' test` pasó correctamente en `comparador-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente en JDK reciente, pero la suite pasa.
+- Siguiente paso:
+- Si quieres cobertura HTTP completa, el siguiente bloque sería un test web de `ComparadorController` con `MockMvc`.
+
+### 2026-04-18 - cobertura HTTP de `ComparadorController` con `MockMvc`
+- Contexto: cierre de la API pública del comparador a nivel web después de endurecer servicio y handler.
+- Cambio realizado:
+- Se agregó `ComparadorControllerTest` con `@WebMvcTest` y `MockMvc`.
+- El test cubre respuestas HTTP:
+- `200 OK` para comparación válida
+- uso de `general` como criterio por defecto cuando no se envía query param
+- `400 Bad Request` para `InvalidComparisonRequestException`
+- `404 Not Found` para `RelatedResourceNotFoundException`
+- `500 Internal Server Error` para error inesperado
+- Se configuraron propiedades de test mínimas para evitar fallos de contexto por `AUTO_SERVICE_URL` y `jwt.secret`.
+- Archivo tocado:
+- `comparador-service/src/test/java/com/example/comparador_service/controller/ComparadorControllerTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q '-Dtest=ComparadorControllerTest,ComparadorServiceImplTest,GlobalExceptionHandlerTest' test` pasó correctamente en `comparador-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente y un log esperado de password generado por Spring Security en el test web, pero la suite pasa.
+- Siguiente paso:
+- Si quieres seguir, el bloque natural es ordenar la documentación OpenAPI del controlador con el nivel de detalle final que quieras dejar expuesto.
+
+### 2026-04-18 - criterios públicos canónicos del comparador
+- Contexto: simplificación de nombres expuestos por la API para reducir ambigüedad entre nombres de criterio y nombres internos.
+- Cambio realizado:
+- Se definieron como nombres canónicos de criterio:
+- `anioFabricacion`
+- `caballosFuerza`
+- `precioReferenciaActual`
+- Se mantuvieron alias legados para compatibilidad:
+- `anio` -> `anioFabricacion`
+- `hp` -> `caballosFuerza`
+- `precioActualAproximado` -> `precioReferenciaActual`
+- `ComparadorServiceImpl` ahora normaliza cualquier alias al nombre canónico y devuelve ese nombre canónico en `ComparacionDTO.criterio`.
+- Se actualizó el mensaje de validación de criterios permitidos para listar los nombres públicos nuevos.
+- Se alinearon también:
+- descripción del endpoint en `ComparadorController`
+- descripción general de `OpenApiConfig`
+- tests de servicio para validar alias legado y retorno canónico
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/service/impl/ComparadorServiceImpl.java`
+- `comparador-service/src/main/java/com/example/comparador_service/controller/ComparadorController.java`
+- `comparador-service/src/main/java/com/example/comparador_service/config/OpenApiConfig.java`
+- `comparador-service/src/test/java/com/example/comparador_service/service/impl/ComparadorServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q '-Dtest=ComparadorControllerTest,ComparadorServiceImplTest,GlobalExceptionHandlerTest' test` pasó correctamente en `comparador-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente y logs esperados de Spring Security en el test web, pero la suite pasa.
+- Siguiente paso:
+- Si quieres seguir, el siguiente bloque con más valor es documentar los DTOs de respuesta con `@Schema` para que Swagger describa mejor `atributosComparados`, `diferenciasClave`, `ranking`, `contextoValor`, `fortalezas` y `alertas`.
+
+### 2026-04-18 - documentación OpenAPI de DTOs de respuesta en comparador
+- Contexto: mejorar la legibilidad de Swagger para la respuesta avanzada del comparador.
+- Cambio realizado:
+- Se agregaron anotaciones `@Schema` y `@ArraySchema` en los DTOs públicos de respuesta:
+- `ComparacionDTO`
+- `AutoComparadoDTO`
+- Swagger ahora describe explícitamente:
+- `criterio`
+- `tipoComparacion`
+- `resumen`
+- `moneda`
+- `autosComparados`
+- `atributosComparados`
+- `diferenciasClave`
+- `ranking`
+- `contextoValor`
+- En `ComparacionDTO` también quedaron documentadas las clases internas:
+- `AtributoComparadoDTO`
+- `ValorAtributoDTO`
+- `DiferenciaClaveDTO`
+- `RankingComparacionDTO`
+- `ContextoValorDTO`
+- En `AutoComparadoDTO` quedaron descritos los campos técnicos, monetarios y los arrays de `fortalezas` y `alertas`.
+- Archivo tocado:
+- `comparador-service/src/main/java/com/example/comparador_service/dto/ComparacionDTO.java`
+- `comparador-service/src/main/java/com/example/comparador_service/dto/AutoComparadoDTO.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- Siguiente paso:
+- Si quieres seguir puliendo la API, el paso natural es documentar también los DTOs de error o agregar ejemplos OpenAPI completos para respuestas `200`.
+
+### 2026-04-19 - DTO formal de error en comparador
+- Contexto: cierre de la documentación pública de la API del comparador para que los errores también tengan contrato explícito.
+- Cambio realizado:
+- Se creó `ErrorResponseDTO` como payload estándar de error con:
+- `timestamp`
+- `status`
+- `error`
+- `message`
+- `GlobalExceptionHandler` ahora devuelve `ResponseEntity<ErrorResponseDTO>` en lugar de `Map<String, Object>`.
+- `ComparadorController` volvió a documentar respuestas `400`, `404` y `500` usando `ErrorResponseDTO` como schema OpenAPI.
+- `GlobalExceptionHandlerTest` se actualizó para validar el DTO tipado en vez de acceder al body como `Map`.
+- Archivos tocados:
+- `comparador-service/src/main/java/com/example/comparador_service/dto/ErrorResponseDTO.java`
+- `comparador-service/src/main/java/com/example/comparador_service/exception/GlobalExceptionHandler.java`
+- `comparador-service/src/main/java/com/example/comparador_service/controller/ComparadorController.java`
+- `comparador-service/src/test/java/com/example/comparador_service/exception/GlobalExceptionHandlerTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `comparador-service`.
+- `mvn -q '-Dtest=ComparadorControllerTest,ComparadorServiceImplTest,GlobalExceptionHandlerTest' test` pasó correctamente en `comparador-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente y logs esperados de Spring Security en el test web, pero la suite pasa.
+- Siguiente paso:
+- Si quieres seguir, el paso con más valor práctico es agregar ejemplos OpenAPI completos para respuestas `200` del comparador o empezar a endurecer `auto-service` con el mismo nivel de documentación y pruebas.
+
+### 2026-04-19 - primera versión de filtros avanzados en `auto-service`
+- Contexto: cierre de la brecha entre el dominio ampliado de autos y la API de discovery, que todavía estaba anclada a filtros viejos.
+- Cambio realizado:
+- `AutoFiltroRequestDTO` ahora soporta filtros avanzados para discovery:
+- `precioReferenciaActualMin` / `precioReferenciaActualMax`
+- `precioSalidaEstimadoMin` / `precioSalidaEstimadoMax`
+- `caballosFuerzaMin` / `caballosFuerzaMax`
+- `velocidadMaximaMin` / `velocidadMaximaMax`
+- `motor`
+- `tipoCombustible`
+- `AutoController` ya expone esos query params en `GET /api/autos/buscar`.
+- `AutoSpecification` se amplió para filtrar por esos nuevos campos.
+- `AutoServiceImpl` ahora permite ordenar también por:
+- `precioReferenciaActual`
+- `precioSalidaEstimado`
+- `caballosFuerza`
+- `velocidadMaxima`
+- `motor`
+- `tipoCombustible`
+- Se añadieron validaciones de rango para los nuevos filtros min/max.
+- `AutoServiceImplTest` se amplió con cobertura para:
+- sort avanzado por `caballosFuerza`
+- validación de rango inválido en `precioReferenciaActual`
+- mensaje actualizado de `sortBy` no soportado
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoFiltroRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/AutoController.java`
+- `auto-service/src/main/java/com/example/autoservice/repository/AutoSpecification.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q '-Dtest=AutoServiceImplTest' test` pasó correctamente en `auto-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente en JDK reciente, pero la suite pasa.
+- Siguiente paso:
+- Si quieres continuar con impacto funcional, el siguiente bloque natural es agregar filtros avanzados restantes como `torqueNm`, `aceleracionCeroACien`, `transmision`, `traccion` y quizá un texto libre sobre `resumen`.
+
+### 2026-04-11 - verificación de arranque real en `auto-service`
+- Contexto: validación del motivo por el cual `auto-service` no estaba ejecutando localmente.
+- Hallazgo:
+- El servicio no arrancaba inicialmente por falta de resolución de `JWT_SECRET` en el contexto de Spring, aunque el valor existía en el `.env` del workspace.
+- Cambio realizado:
+- Se agregó `spring.config.import=optional:file:../.env[.properties]` en `auto-service/src/main/resources/application.properties` para que el módulo cargue el `.env` del repositorio al ejecutarse localmente desde su carpeta.
+- Verificación:
+- `mvn -q spring-boot:run "-Dspring-boot.run.profiles=local"` logró arrancar el servicio.
+- Una verificación HTTP a `http://localhost:9031/api/autos` respondió `200`.
+- El fallo posterior observado fue distinto: `Port 9031 was already in use`.
+- Se confirmó un proceso `java` escuchando en el puerto `9031` (`PID 14944`), por lo que el bloqueo restante es de puerto ocupado, no de configuración del servicio.

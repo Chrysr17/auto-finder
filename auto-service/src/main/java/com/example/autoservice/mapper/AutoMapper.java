@@ -55,6 +55,12 @@ public interface AutoMapper {
     Auto toEntity(AutoUpdateRequestDTO dto);
 
     @Mapping(source = "anioFabricacion", target = "anioFabricacion")
+    @Mapping(source = "precioReferenciaActual", target = "precioReferenciaActual")
+    @Mapping(source = "precioSalidaEstimado", target = "precioSalidaEstimado")
+    @Mapping(source = "motor", target = "motor")
+    @Mapping(source = "caballosFuerza", target = "caballosFuerza")
+    @Mapping(source = "velocidadMaxima", target = "velocidadMaxima")
+    @Mapping(source = "tipoCombustible", target = "tipoCombustible")
     @Mapping(source = "imagenPortadaUrl", target = "imagenPortadaUrl")
     AutoResponseDTO toResponseDTO(AutoListadoProjection p);
 

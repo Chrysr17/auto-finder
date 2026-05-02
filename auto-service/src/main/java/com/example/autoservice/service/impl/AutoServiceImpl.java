@@ -199,6 +199,24 @@ public class AutoServiceImpl implements AutoService {
         if ("anioFabricacion".equalsIgnoreCase(sortBy)) {
             return "anioFabricacion";
         }
+        if ("precioReferenciaActual".equalsIgnoreCase(sortBy)) {
+            return "precioReferenciaActual";
+        }
+        if ("precioSalidaEstimado".equalsIgnoreCase(sortBy)) {
+            return "precioSalidaEstimado";
+        }
+        if ("caballosFuerza".equalsIgnoreCase(sortBy)) {
+            return "caballosFuerza";
+        }
+        if ("velocidadMaxima".equalsIgnoreCase(sortBy)) {
+            return "velocidadMaxima";
+        }
+        if ("motor".equalsIgnoreCase(sortBy)) {
+            return "motor";
+        }
+        if ("tipoCombustible".equalsIgnoreCase(sortBy)) {
+            return "tipoCombustible";
+        }
         if ("color".equalsIgnoreCase(sortBy)) {
             return "color";
         }
@@ -214,9 +232,29 @@ public class AutoServiceImpl implements AutoService {
             throw new InvalidSearchFilterException("precioMin no puede ser mayor que precioMax");
         }
 
+        if (filtro.getPrecioReferenciaActualMin() != null && filtro.getPrecioReferenciaActualMax() != null
+                && filtro.getPrecioReferenciaActualMin() > filtro.getPrecioReferenciaActualMax()) {
+            throw new InvalidSearchFilterException("precioReferenciaActualMin no puede ser mayor que precioReferenciaActualMax");
+        }
+
+        if (filtro.getPrecioSalidaEstimadoMin() != null && filtro.getPrecioSalidaEstimadoMax() != null
+                && filtro.getPrecioSalidaEstimadoMin() > filtro.getPrecioSalidaEstimadoMax()) {
+            throw new InvalidSearchFilterException("precioSalidaEstimadoMin no puede ser mayor que precioSalidaEstimadoMax");
+        }
+
         if (filtro.getAnioMin() != null && filtro.getAnioMax() != null
                 && filtro.getAnioMin() > filtro.getAnioMax()) {
             throw new InvalidSearchFilterException("anioMin no puede ser mayor que anioMax");
+        }
+
+        if (filtro.getCaballosFuerzaMin() != null && filtro.getCaballosFuerzaMax() != null
+                && filtro.getCaballosFuerzaMin() > filtro.getCaballosFuerzaMax()) {
+            throw new InvalidSearchFilterException("caballosFuerzaMin no puede ser mayor que caballosFuerzaMax");
+        }
+
+        if (filtro.getVelocidadMaximaMin() != null && filtro.getVelocidadMaximaMax() != null
+                && filtro.getVelocidadMaximaMin() > filtro.getVelocidadMaximaMax()) {
+            throw new InvalidSearchFilterException("velocidadMaximaMin no puede ser mayor que velocidadMaximaMax");
         }
 
         if (filtro.getPage() != null && filtro.getPage() < 0) {
@@ -232,7 +270,10 @@ public class AutoServiceImpl implements AutoService {
         }
 
         if (filtro.getSortBy() != null && !isSupportedSortBy(filtro.getSortBy())) {
-            throw new InvalidSearchFilterException("sortBy no soportado. Valores permitidos: precio, anioFabricacion, color, marca");
+            throw new InvalidSearchFilterException(
+                    "sortBy no soportado. Valores permitidos: precio, precioReferenciaActual, precioSalidaEstimado, "
+                            + "anioFabricacion, caballosFuerza, velocidadMaxima, motor, tipoCombustible, color, marca"
+            );
         }
 
         if (filtro.getDirection() != null
@@ -243,7 +284,13 @@ public class AutoServiceImpl implements AutoService {
 
     private boolean isSupportedSortBy(String sortBy) {
         return "precio".equalsIgnoreCase(sortBy)
+                || "precioReferenciaActual".equalsIgnoreCase(sortBy)
+                || "precioSalidaEstimado".equalsIgnoreCase(sortBy)
                 || "anioFabricacion".equalsIgnoreCase(sortBy)
+                || "caballosFuerza".equalsIgnoreCase(sortBy)
+                || "velocidadMaxima".equalsIgnoreCase(sortBy)
+                || "motor".equalsIgnoreCase(sortBy)
+                || "tipoCombustible".equalsIgnoreCase(sortBy)
                 || "color".equalsIgnoreCase(sortBy)
                 || "marca".equalsIgnoreCase(sortBy);
     }

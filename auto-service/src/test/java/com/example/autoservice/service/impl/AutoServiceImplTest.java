@@ -175,6 +175,66 @@ class AutoServiceImplTest {
     }
 
     @Test
+    void buscarConFiltros_deberiaPermitirFiltrosYSortAvanzados() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .precioReferenciaActualMin(20000.0)
+                .precioReferenciaActualMax(40000.0)
+                .precioSalidaEstimadoMin(15000.0)
+                .precioSalidaEstimadoMax(35000.0)
+                .caballosFuerzaMin(180)
+                .caballosFuerzaMax(320)
+                .velocidadMaximaMin(220)
+                .velocidadMaximaMax(280)
+                .motor("turbo")
+                .tipoCombustible("Gasolina")
+                .page(0)
+                .size(10)
+                .sortBy("caballosFuerza")
+                .direction("desc")
+                .build();
+        Auto auto = Auto.builder()
+                .id(3L)
+                .color("Negro")
+                .precio(38000.0)
+                .precioReferenciaActual(39500.0)
+                .precioSalidaEstimado(30000.0)
+                .anioFabricacion(2022)
+                .caballosFuerza(280)
+                .velocidadMaxima(250)
+                .build();
+        AutoResponseDTO responseDTO = AutoResponseDTO.builder()
+                .id(3L)
+                .precioReferenciaActual(39500.0)
+                .precioSalidaEstimado(30000.0)
+                .caballosFuerza(280)
+                .velocidadMaxima(250)
+                .motor("2.0 Turbo")
+                .tipoCombustible("Gasolina")
+                .build();
+        Page<Auto> autosPage = new PageImpl<>(
+                List.of(auto),
+                PageRequest.of(0, 10, org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "caballosFuerza")),
+                1
+        );
+
+        when(autoRepositoy.findAll(any(Specification.class), any(Pageable.class))).thenReturn(autosPage);
+        when(autoMapper.toResponseDTO(auto)).thenReturn(responseDTO);
+
+        var resultado = autoService.buscarConFiltros(filtro);
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(autoRepositoy).findAll(any(Specification.class), pageableCaptor.capture());
+
+        Pageable pageable = pageableCaptor.getValue();
+        assertEquals(org.springframework.data.domain.Sort.Direction.DESC,
+                pageable.getSort().getOrderFor("caballosFuerza").getDirection());
+        assertEquals(1, resultado.getContent().size());
+        assertEquals(39500.0, resultado.getContent().get(0).getPrecioReferenciaActual());
+        assertEquals(280, resultado.getContent().get(0).getCaballosFuerza());
+    }
+
+    @Test
     void buscarConFiltros_deberiaLanzarExcepcionSiPrecioMinEsMayorQuePrecioMax() {
         AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
                 .precioMin(30000.0)
@@ -185,6 +245,20 @@ class AutoServiceImplTest {
                 () -> autoService.buscarConFiltros(filtro));
 
         assertEquals("precioMin no puede ser mayor que precioMax", exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiPrecioReferenciaActualMinEsMayorQuePrecioReferenciaActualMax() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .precioReferenciaActualMin(50000.0)
+                .precioReferenciaActualMax(30000.0)
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("precioReferenciaActualMin no puede ser mayor que precioReferenciaActualMax", exception.getMessage());
         verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
     }
 
@@ -210,7 +284,7 @@ class AutoServiceImplTest {
         InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
                 () -> autoService.buscarConFiltros(filtro));
 
-        assertEquals("sortBy no soportado. Valores permitidos: precio, anioFabricacion, color, marca",
+        assertEquals("sortBy no soportado. Valores permitidos: precio, precioReferenciaActual, precioSalidaEstimado, anioFabricacion, caballosFuerza, velocidadMaxima, motor, tipoCombustible, color, marca",
                 exception.getMessage());
         verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
     }
