@@ -1,6 +1,7 @@
 package com.example.gatewayservice.security;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,13 +19,16 @@ import java.util.Set;
 @Component
 public class JwtAuthWebFilter implements WebFilter {
 
-    private static final Set<String> PUBLIC_PATH_PREFIXES = Set.of(
-            "/api/auth/",
-            "/api/autos/",
-            "/api/marcas/",
-            "/api/modelos/",
-            "/api/categorias/",
-            "/api/comparar/"
+    private static final Set<String> PUBLIC_ANY_METHOD_PATH_PREFIXES = Set.of(
+            "/api/auth",
+            "/api/comparar"
+    );
+
+    private static final Set<String> PUBLIC_GET_PATH_PREFIXES = Set.of(
+            "/api/autos",
+            "/api/marcas",
+            "/api/modelos",
+            "/api/categorias"
     );
 
     private final JwtUtil jwtUtil;
@@ -37,7 +41,8 @@ public class JwtAuthWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
         String path = exchange.getRequest().getURI().getPath();
-        boolean publicPath = isPublicPath(path);
+        HttpMethod method = exchange.getRequest().getMethod();
+        boolean publicPath = isPublicPath(method, path);
 
         if (publicPath && !hasBearerToken(exchange)) {
             return chain.filter(exchange);
@@ -76,8 +81,14 @@ public class JwtAuthWebFilter implements WebFilter {
                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
     }
 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATH_PREFIXES.stream().anyMatch(path::startsWith);
+    private boolean isPublicPath(HttpMethod method, String path) {
+        return PUBLIC_ANY_METHOD_PATH_PREFIXES.stream().anyMatch(prefix -> pathMatchesPrefix(path, prefix))
+                || (HttpMethod.GET.equals(method)
+                && PUBLIC_GET_PATH_PREFIXES.stream().anyMatch(prefix -> pathMatchesPrefix(path, prefix)));
+    }
+
+    private boolean pathMatchesPrefix(String path, String prefix) {
+        return path.equals(prefix) || path.startsWith(prefix + "/");
     }
 
     private boolean hasBearerToken(ServerWebExchange exchange) {
