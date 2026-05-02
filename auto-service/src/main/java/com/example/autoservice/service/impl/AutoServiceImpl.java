@@ -211,11 +211,23 @@ public class AutoServiceImpl implements AutoService {
         if ("velocidadMaxima".equalsIgnoreCase(sortBy)) {
             return "velocidadMaxima";
         }
+        if ("torqueNm".equalsIgnoreCase(sortBy)) {
+            return "torqueNm";
+        }
+        if ("aceleracionCeroACien".equalsIgnoreCase(sortBy)) {
+            return "aceleracionCeroACien";
+        }
         if ("motor".equalsIgnoreCase(sortBy)) {
             return "motor";
         }
         if ("tipoCombustible".equalsIgnoreCase(sortBy)) {
             return "tipoCombustible";
+        }
+        if ("transmision".equalsIgnoreCase(sortBy)) {
+            return "transmision";
+        }
+        if ("traccion".equalsIgnoreCase(sortBy)) {
+            return "traccion";
         }
         if ("color".equalsIgnoreCase(sortBy)) {
             return "color";
@@ -252,9 +264,19 @@ public class AutoServiceImpl implements AutoService {
             throw new InvalidSearchFilterException("caballosFuerzaMin no puede ser mayor que caballosFuerzaMax");
         }
 
+        if (filtro.getTorqueNmMin() != null && filtro.getTorqueNmMax() != null
+                && filtro.getTorqueNmMin() > filtro.getTorqueNmMax()) {
+            throw new InvalidSearchFilterException("torqueNmMin no puede ser mayor que torqueNmMax");
+        }
+
         if (filtro.getVelocidadMaximaMin() != null && filtro.getVelocidadMaximaMax() != null
                 && filtro.getVelocidadMaximaMin() > filtro.getVelocidadMaximaMax()) {
             throw new InvalidSearchFilterException("velocidadMaximaMin no puede ser mayor que velocidadMaximaMax");
+        }
+
+        if (filtro.getAceleracionCeroACienMin() != null && filtro.getAceleracionCeroACienMax() != null
+                && filtro.getAceleracionCeroACienMin() > filtro.getAceleracionCeroACienMax()) {
+            throw new InvalidSearchFilterException("aceleracionCeroACienMin no puede ser mayor que aceleracionCeroACienMax");
         }
 
         if (filtro.getPage() != null && filtro.getPage() < 0) {
@@ -272,7 +294,8 @@ public class AutoServiceImpl implements AutoService {
         if (filtro.getSortBy() != null && !isSupportedSortBy(filtro.getSortBy())) {
             throw new InvalidSearchFilterException(
                     "sortBy no soportado. Valores permitidos: precio, precioReferenciaActual, precioSalidaEstimado, "
-                            + "anioFabricacion, caballosFuerza, velocidadMaxima, motor, tipoCombustible, color, marca"
+                            + "anioFabricacion, caballosFuerza, torqueNm, velocidadMaxima, aceleracionCeroACien, "
+                            + "motor, tipoCombustible, transmision, traccion, color, marca"
             );
         }
 
@@ -288,9 +311,13 @@ public class AutoServiceImpl implements AutoService {
                 || "precioSalidaEstimado".equalsIgnoreCase(sortBy)
                 || "anioFabricacion".equalsIgnoreCase(sortBy)
                 || "caballosFuerza".equalsIgnoreCase(sortBy)
+                || "torqueNm".equalsIgnoreCase(sortBy)
                 || "velocidadMaxima".equalsIgnoreCase(sortBy)
+                || "aceleracionCeroACien".equalsIgnoreCase(sortBy)
                 || "motor".equalsIgnoreCase(sortBy)
                 || "tipoCombustible".equalsIgnoreCase(sortBy)
+                || "transmision".equalsIgnoreCase(sortBy)
+                || "traccion".equalsIgnoreCase(sortBy)
                 || "color".equalsIgnoreCase(sortBy)
                 || "marca".equalsIgnoreCase(sortBy);
     }

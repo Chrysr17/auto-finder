@@ -23,11 +23,18 @@ public final class AutoSpecification {
                 .and(anioMenorOIgual(filtro.getAnioMax()))
                 .and(caballosFuerzaMayorOIgual(filtro.getCaballosFuerzaMin()))
                 .and(caballosFuerzaMenorOIgual(filtro.getCaballosFuerzaMax()))
+                .and(torqueNmMayorOIgual(filtro.getTorqueNmMin()))
+                .and(torqueNmMenorOIgual(filtro.getTorqueNmMax()))
                 .and(velocidadMaximaMayorOIgual(filtro.getVelocidadMaximaMin()))
                 .and(velocidadMaximaMenorOIgual(filtro.getVelocidadMaximaMax()))
+                .and(aceleracionCeroACienMayorOIgual(filtro.getAceleracionCeroACienMin()))
+                .and(aceleracionCeroACienMenorOIgual(filtro.getAceleracionCeroACienMax()))
                 .and(colorContiene(filtro.getColor()))
                 .and(motorContiene(filtro.getMotor()))
-                .and(tipoCombustibleEs(filtro.getTipoCombustible()));
+                .and(tipoCombustibleEs(filtro.getTipoCombustible()))
+                .and(transmisionEs(filtro.getTransmision()))
+                .and(traccionEs(filtro.getTraccion()))
+                .and(textoContiene(filtro.getTexto()));
     }
 
     private static Specification<Auto> hasMarca(Long marcaId) {
@@ -105,6 +112,26 @@ public final class AutoSpecification {
                 velocidadMaximaMax == null ? null : cb.lessThanOrEqualTo(root.get("velocidadMaxima"), velocidadMaximaMax);
     }
 
+    private static Specification<Auto> torqueNmMayorOIgual(Integer torqueNmMin) {
+        return (root, query, cb) ->
+                torqueNmMin == null ? null : cb.greaterThanOrEqualTo(root.get("torqueNm"), torqueNmMin);
+    }
+
+    private static Specification<Auto> torqueNmMenorOIgual(Integer torqueNmMax) {
+        return (root, query, cb) ->
+                torqueNmMax == null ? null : cb.lessThanOrEqualTo(root.get("torqueNm"), torqueNmMax);
+    }
+
+    private static Specification<Auto> aceleracionCeroACienMayorOIgual(Double aceleracionCeroACienMin) {
+        return (root, query, cb) ->
+                aceleracionCeroACienMin == null ? null : cb.greaterThanOrEqualTo(root.get("aceleracionCeroACien"), aceleracionCeroACienMin);
+    }
+
+    private static Specification<Auto> aceleracionCeroACienMenorOIgual(Double aceleracionCeroACienMax) {
+        return (root, query, cb) ->
+                aceleracionCeroACienMax == null ? null : cb.lessThanOrEqualTo(root.get("aceleracionCeroACien"), aceleracionCeroACienMax);
+    }
+
     private static Specification<Auto> colorContiene(String color) {
         return (root, query, cb) ->
                 color == null || color.isBlank()
@@ -124,5 +151,37 @@ public final class AutoSpecification {
                 tipoCombustible == null || tipoCombustible.isBlank()
                         ? null
                         : cb.equal(cb.lower(root.get("tipoCombustible")), tipoCombustible.toLowerCase());
+    }
+
+    private static Specification<Auto> transmisionEs(String transmision) {
+        return (root, query, cb) ->
+                transmision == null || transmision.isBlank()
+                        ? null
+                        : cb.equal(cb.lower(root.get("transmision")), transmision.toLowerCase());
+    }
+
+    private static Specification<Auto> traccionEs(String traccion) {
+        return (root, query, cb) ->
+                traccion == null || traccion.isBlank()
+                        ? null
+                        : cb.equal(cb.lower(root.get("traccion")), traccion.toLowerCase());
+    }
+
+    private static Specification<Auto> textoContiene(String texto) {
+        return (root, query, cb) -> {
+            if (texto == null || texto.isBlank()) {
+                return null;
+            }
+
+            String pattern = "%" + texto.toLowerCase() + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("resumen")), pattern),
+                    cb.like(cb.lower(root.get("descripcionValor")), pattern),
+                    cb.like(cb.lower(root.get("motor")), pattern),
+                    cb.like(cb.lower(root.get("marca").get("nombre")), pattern),
+                    cb.like(cb.lower(root.get("modelo").get("nombre")), pattern),
+                    cb.like(cb.lower(root.get("categoria").get("nombre")), pattern)
+            );
+        };
     }
 }

@@ -44,11 +44,18 @@ public class AutoController {
             @RequestParam(required = false) Integer anioMax,
             @RequestParam(required = false) Integer caballosFuerzaMin,
             @RequestParam(required = false) Integer caballosFuerzaMax,
+            @RequestParam(required = false) Integer torqueNmMin,
+            @RequestParam(required = false) Integer torqueNmMax,
             @RequestParam(required = false) Integer velocidadMaximaMin,
             @RequestParam(required = false) Integer velocidadMaximaMax,
+            @RequestParam(required = false) Double aceleracionCeroACienMin,
+            @RequestParam(required = false) Double aceleracionCeroACienMax,
             @RequestParam(required = false) String color,
             @RequestParam(required = false) String motor,
             @RequestParam(required = false) String tipoCombustible,
+            @RequestParam(required = false) String transmision,
+            @RequestParam(required = false) String traccion,
+            @RequestParam(required = false) String texto,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(required = false, defaultValue = "precio") String sortBy,
@@ -68,11 +75,18 @@ public class AutoController {
                 .anioMax(anioMax)
                 .caballosFuerzaMin(caballosFuerzaMin)
                 .caballosFuerzaMax(caballosFuerzaMax)
+                .torqueNmMin(torqueNmMin)
+                .torqueNmMax(torqueNmMax)
                 .velocidadMaximaMin(velocidadMaximaMin)
                 .velocidadMaximaMax(velocidadMaximaMax)
+                .aceleracionCeroACienMin(aceleracionCeroACienMin)
+                .aceleracionCeroACienMax(aceleracionCeroACienMax)
                 .color(color)
                 .motor(motor)
                 .tipoCombustible(tipoCombustible)
+                .transmision(transmision)
+                .traccion(traccion)
+                .texto(texto)
                 .page(page)
                 .size(size)
                 .sortBy(sortBy)

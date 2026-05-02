@@ -183,10 +183,17 @@ class AutoServiceImplTest {
                 .precioSalidaEstimadoMax(35000.0)
                 .caballosFuerzaMin(180)
                 .caballosFuerzaMax(320)
+                .torqueNmMin(250)
+                .torqueNmMax(450)
                 .velocidadMaximaMin(220)
                 .velocidadMaximaMax(280)
+                .aceleracionCeroACienMin(4.0)
+                .aceleracionCeroACienMax(8.0)
                 .motor("turbo")
                 .tipoCombustible("Gasolina")
+                .transmision("Manual")
+                .traccion("RWD")
+                .texto("deportivo")
                 .page(0)
                 .size(10)
                 .sortBy("caballosFuerza")
@@ -200,16 +207,24 @@ class AutoServiceImplTest {
                 .precioSalidaEstimado(30000.0)
                 .anioFabricacion(2022)
                 .caballosFuerza(280)
+                .torqueNm(390)
                 .velocidadMaxima(250)
+                .aceleracionCeroACien(5.8)
+                .transmision("Manual")
+                .traccion("RWD")
                 .build();
         AutoResponseDTO responseDTO = AutoResponseDTO.builder()
                 .id(3L)
                 .precioReferenciaActual(39500.0)
                 .precioSalidaEstimado(30000.0)
                 .caballosFuerza(280)
+                .torqueNm(390)
                 .velocidadMaxima(250)
+                .aceleracionCeroACien(5.8)
                 .motor("2.0 Turbo")
                 .tipoCombustible("Gasolina")
+                .transmision("Manual")
+                .traccion("RWD")
                 .build();
         Page<Auto> autosPage = new PageImpl<>(
                 List.of(auto),
@@ -232,6 +247,38 @@ class AutoServiceImplTest {
         assertEquals(1, resultado.getContent().size());
         assertEquals(39500.0, resultado.getContent().get(0).getPrecioReferenciaActual());
         assertEquals(280, resultado.getContent().get(0).getCaballosFuerza());
+        assertEquals(390, resultado.getContent().get(0).getTorqueNm());
+        assertEquals(5.8, resultado.getContent().get(0).getAceleracionCeroACien());
+        assertEquals("Manual", resultado.getContent().get(0).getTransmision());
+        assertEquals("RWD", resultado.getContent().get(0).getTraccion());
+    }
+
+    @Test
+    void buscarConFiltros_deberiaPermitirSortPorAceleracionCeroACien() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .sortBy("aceleracionCeroACien")
+                .direction("asc")
+                .build();
+        Auto auto = Auto.builder().id(4L).aceleracionCeroACien(4.9).build();
+        AutoResponseDTO responseDTO = AutoResponseDTO.builder().id(4L).aceleracionCeroACien(4.9).build();
+        Page<Auto> autosPage = new PageImpl<>(
+                List.of(auto),
+                PageRequest.of(0, 10, org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.ASC, "aceleracionCeroACien")),
+                1
+        );
+
+        when(autoRepositoy.findAll(any(Specification.class), any(Pageable.class))).thenReturn(autosPage);
+        when(autoMapper.toResponseDTO(auto)).thenReturn(responseDTO);
+
+        autoService.buscarConFiltros(filtro);
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(autoRepositoy).findAll(any(Specification.class), pageableCaptor.capture());
+
+        Pageable pageable = pageableCaptor.getValue();
+        assertEquals(org.springframework.data.domain.Sort.Direction.ASC,
+                pageable.getSort().getOrderFor("aceleracionCeroACien").getDirection());
     }
 
     @Test
@@ -263,6 +310,34 @@ class AutoServiceImplTest {
     }
 
     @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiTorqueNmMinEsMayorQueTorqueNmMax() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .torqueNmMin(500)
+                .torqueNmMax(300)
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("torqueNmMin no puede ser mayor que torqueNmMax", exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void buscarConFiltros_deberiaLanzarExcepcionSiAceleracionCeroACienMinEsMayorQueAceleracionCeroACienMax() {
+        AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
+                .aceleracionCeroACienMin(9.0)
+                .aceleracionCeroACienMax(5.0)
+                .build();
+
+        InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
+                () -> autoService.buscarConFiltros(filtro));
+
+        assertEquals("aceleracionCeroACienMin no puede ser mayor que aceleracionCeroACienMax", exception.getMessage());
+        verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
     void buscarConFiltros_deberiaLanzarExcepcionSiPageEsNegativo() {
         AutoFiltroRequestDTO filtro = AutoFiltroRequestDTO.builder()
                 .page(-1)
@@ -284,7 +359,7 @@ class AutoServiceImplTest {
         InvalidSearchFilterException exception = assertThrows(InvalidSearchFilterException.class,
                 () -> autoService.buscarConFiltros(filtro));
 
-        assertEquals("sortBy no soportado. Valores permitidos: precio, precioReferenciaActual, precioSalidaEstimado, anioFabricacion, caballosFuerza, velocidadMaxima, motor, tipoCombustible, color, marca",
+        assertEquals("sortBy no soportado. Valores permitidos: precio, precioReferenciaActual, precioSalidaEstimado, anioFabricacion, caballosFuerza, torqueNm, velocidadMaxima, aceleracionCeroACien, motor, tipoCombustible, transmision, traccion, color, marca",
                 exception.getMessage());
         verify(autoRepositoy, never()).findAll(any(Specification.class), any(Pageable.class));
     }

@@ -797,3 +797,39 @@ Este archivo funciona como memoria operativa del proyecto. Se usará para regist
 - Una verificación HTTP a `http://localhost:9031/api/autos` respondió `200`.
 - El fallo posterior observado fue distinto: `Port 9031 was already in use`.
 - Se confirmó un proceso `java` escuchando en el puerto `9031` (`PID 14944`), por lo que el bloqueo restante es de puerto ocupado, no de configuración del servicio.
+
+### 2026-05-02 - cierre de filtros finales de discovery en `auto-service`
+- Contexto: completar los filtros restantes antes de preparar un `api_contract` estable para aplicar cambios en el front existente.
+- Cambio realizado:
+- `AutoFiltroRequestDTO` ahora soporta:
+- `torqueNmMin` / `torqueNmMax`
+- `aceleracionCeroACienMin` / `aceleracionCeroACienMax`
+- `transmision`
+- `traccion`
+- `texto`
+- `AutoController` expone esos nuevos query params en `GET /api/autos/buscar`.
+- `AutoSpecification` filtra por:
+- rango de torque
+- rango de aceleración 0-100
+- coincidencia exacta case-insensitive de transmisión y tracción
+- texto libre sobre `resumen`, `descripcionValor`, `motor`, `marca.nombre`, `modelo.nombre` y `categoria.nombre`
+- `AutoServiceImpl` ahora permite ordenar también por:
+- `torqueNm`
+- `aceleracionCeroACien`
+- `transmision`
+- `traccion`
+- Se añadieron validaciones de rango para `torqueNm` y `aceleracionCeroACien`.
+- Se ampliaron tests unitarios de búsqueda avanzada para cubrir los nuevos filtros, sort por aceleración y validaciones inválidas.
+- Archivos tocados:
+- `auto-service/src/main/java/com/example/autoservice/dto/AutoFiltroRequestDTO.java`
+- `auto-service/src/main/java/com/example/autoservice/controller/AutoController.java`
+- `auto-service/src/main/java/com/example/autoservice/repository/AutoSpecification.java`
+- `auto-service/src/main/java/com/example/autoservice/service/impl/AutoServiceImpl.java`
+- `auto-service/src/test/java/com/example/autoservice/service/impl/AutoServiceImplTest.java`
+- Verificación:
+- `mvn -q -DskipTests compile` pasó correctamente en `auto-service`.
+- `mvn -q '-Dtest=AutoServiceImplTest' test` pasó correctamente en `auto-service`.
+- Observación:
+- Persisten warnings de Mockito por self-attaching del agente en JDK reciente, pero la suite pasa.
+- Siguiente paso:
+- Preparar `docs/api-contract.md` para congelar endpoints, query params, respuestas y errores que consumirá el front.
