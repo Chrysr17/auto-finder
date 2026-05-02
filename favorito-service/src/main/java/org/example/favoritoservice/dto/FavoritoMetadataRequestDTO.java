@@ -5,17 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FavoritoDTO {
-    private Long id;
-    private Long autoId;
-    private LocalDateTime fechaCreacion;
-    private LocalDateTime fechaActualizacion;
+public class FavoritoMetadataRequestDTO {
     private String listaNombre;
     private String nota;
 }

@@ -11,11 +11,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FavoritoDTO {
+public class FavoritoDetalleDTO {
     private Long id;
     private Long autoId;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
     private String listaNombre;
     private String nota;
+    private AutoDTO auto;
 }

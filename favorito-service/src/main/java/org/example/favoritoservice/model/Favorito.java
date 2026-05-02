@@ -29,4 +29,13 @@ public class Favorito {
     @Column(name = "fecha_creacion" , nullable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
+
+    @Column(name = "lista_nombre")
+    private String listaNombre;
+
+    @Column(columnDefinition = "TEXT")
+    private String nota;
+
 }

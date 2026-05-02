@@ -12,6 +12,8 @@ public interface FavoritoRepository extends JpaRepository<Favorito, Long> {
 
     List<Favorito> findByUsernameOrderByFechaCreacionDesc(String username);
 
+    List<Favorito> findByUsernameAndListaNombreIgnoreCaseOrderByFechaCreacionDesc(String username, String listaNombre);
+
     Optional<Favorito> findByUsernameAndAutoId(String username, Long autoId);
 
     boolean existsByUsernameAndAutoId(String username, Long autoId);

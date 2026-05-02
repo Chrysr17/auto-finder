@@ -3,6 +3,7 @@ package org.example.favoritoservice.service.impl;
 import org.example.favoritoservice.client.AutoClient;
 import org.example.favoritoservice.dto.AutoDTO;
 import org.example.favoritoservice.dto.FavoritoDTO;
+import org.example.favoritoservice.dto.FavoritoMetadataRequestDTO;
 import org.example.favoritoservice.exception.DuplicateFavoriteException;
 import org.example.favoritoservice.exception.InvalidFavoriteRequestException;
 import org.example.favoritoservice.exception.RelatedResourceNotFoundException;
@@ -57,7 +58,32 @@ class FavoritoServiceImplTest {
         assertEquals(1L, resultado.getId());
         assertEquals(autoId, resultado.getAutoId());
         assertNotNull(resultado.getFechaCreacion());
+        assertEquals("General", resultado.getListaNombre());
         verify(favoritoRepository).save(any(Favorito.class));
+    }
+
+    @Test
+    void agregarFavorito_deberiaGuardarListaYNotaSiSeEnviaMetadata() {
+        String username = "christian";
+        Long autoId = 10L;
+        FavoritoMetadataRequestDTO metadata = FavoritoMetadataRequestDTO.builder()
+                .listaNombre("Clasicos japoneses")
+                .nota("Revisar version manual")
+                .build();
+
+        when(autoClient.obtenerAuto(autoId)).thenReturn(AutoDTO.builder().id(autoId).build());
+        when(favoritoRepository.existsByUsernameAndAutoId(username, autoId)).thenReturn(false);
+        when(favoritoRepository.save(any(Favorito.class))).thenAnswer(invocation -> {
+            Favorito favorito = invocation.getArgument(0);
+            favorito.setId(1L);
+            return favorito;
+        });
+
+        FavoritoDTO resultado = favoritoService.agregarFavorito(username, autoId, metadata);
+
+        assertEquals("Clasicos japoneses", resultado.getListaNombre());
+        assertEquals("Revisar version manual", resultado.getNota());
+        assertNotNull(resultado.getFechaActualizacion());
     }
 
     @Test
@@ -114,6 +140,29 @@ class FavoritoServiceImplTest {
         assertEquals(1L, resultado.get(0).getId());
         assertEquals(20L, resultado.get(0).getAutoId());
         assertEquals(fecha, resultado.get(0).getFechaCreacion());
+        assertEquals("General", resultado.get(0).getListaNombre());
+    }
+
+    @Test
+    void listarFavoritosPorLista_deberiaRetornarSoloListaSolicitada() {
+        String username = "christian";
+        LocalDateTime fecha = LocalDateTime.of(2026, 3, 28, 10, 30);
+
+        when(favoritoRepository.findByUsernameAndListaNombreIgnoreCaseOrderByFechaCreacionDesc(username, "Track"))
+                .thenReturn(List.of(
+                        Favorito.builder()
+                                .id(1L)
+                                .username(username)
+                                .autoId(20L)
+                                .listaNombre("Track")
+                                .fechaCreacion(fecha)
+                                .build()
+                ));
+
+        List<FavoritoDTO> resultado = favoritoService.listarFavoritosPorLista(username, "Track");
+
+        assertEquals(1, resultado.size());
+        assertEquals("Track", resultado.get(0).getListaNombre());
     }
 
     @Test
@@ -132,6 +181,77 @@ class FavoritoServiceImplTest {
         assertEquals(1, resultado.size());
         assertEquals(autoId, resultado.get(0).getId());
         assertEquals("Toyota", resultado.get(0).getMarcaNombre());
+    }
+
+    @Test
+    void actualizarFavorito_deberiaModificarListaYNota() {
+        String username = "christian";
+        Long autoId = 20L;
+        Favorito favorito = Favorito.builder()
+                .id(1L)
+                .username(username)
+                .autoId(autoId)
+                .listaNombre("General")
+                .fechaCreacion(LocalDateTime.now())
+                .build();
+        FavoritoMetadataRequestDTO metadata = FavoritoMetadataRequestDTO.builder()
+                .listaNombre("Compra futura")
+                .nota("Comparar contra Supra")
+                .build();
+
+        when(favoritoRepository.findByUsernameAndAutoId(username, autoId)).thenReturn(java.util.Optional.of(favorito));
+        when(favoritoRepository.save(favorito)).thenReturn(favorito);
+
+        FavoritoDTO resultado = favoritoService.actualizarFavorito(username, autoId, metadata);
+
+        assertEquals("Compra futura", resultado.getListaNombre());
+        assertEquals("Comparar contra Supra", resultado.getNota());
+        assertNotNull(resultado.getFechaActualizacion());
+    }
+
+    @Test
+    void listarListas_deberiaAgruparFavoritosPorLista() {
+        String username = "christian";
+        LocalDateTime fecha = LocalDateTime.of(2026, 3, 28, 10, 30);
+
+        when(favoritoRepository.findByUsernameOrderByFechaCreacionDesc(username)).thenReturn(List.of(
+                Favorito.builder().id(1L).username(username).autoId(20L).listaNombre("Track").fechaCreacion(fecha).build(),
+                Favorito.builder().id(2L).username(username).autoId(21L).listaNombre("Track").fechaCreacion(fecha.plusDays(1)).build(),
+                Favorito.builder().id(3L).username(username).autoId(22L).listaNombre("Daily").fechaCreacion(fecha).build()
+        ));
+
+        var resultado = favoritoService.listarListas(username);
+
+        assertEquals(2, resultado.size());
+        assertEquals("Daily", resultado.get(0).getNombre());
+        assertEquals(1, resultado.get(0).getTotalFavoritos());
+        assertEquals("Track", resultado.get(1).getNombre());
+        assertEquals(2, resultado.get(1).getTotalFavoritos());
+    }
+
+    @Test
+    void obtenerSenales_deberiaAgruparPorListaMarcaYCategoria() {
+        String username = "christian";
+
+        when(favoritoRepository.findByUsernameOrderByFechaCreacionDesc(username)).thenReturn(List.of(
+                Favorito.builder().id(1L).username(username).autoId(20L).listaNombre("Track").fechaCreacion(LocalDateTime.now()).build(),
+                Favorito.builder().id(2L).username(username).autoId(21L).listaNombre("Track").fechaCreacion(LocalDateTime.now()).build(),
+                Favorito.builder().id(3L).username(username).autoId(22L).listaNombre("Daily").fechaCreacion(LocalDateTime.now()).build()
+        ));
+        when(autoClient.obtenerAuto(20L)).thenReturn(AutoDTO.builder().id(20L).marcaNombre("Toyota").categoriaNombre("Coupe").build());
+        when(autoClient.obtenerAuto(21L)).thenReturn(AutoDTO.builder().id(21L).marcaNombre("Toyota").categoriaNombre("Sedan").build());
+        when(autoClient.obtenerAuto(22L)).thenReturn(AutoDTO.builder().id(22L).marcaNombre("Honda").categoriaNombre("Sedan").build());
+
+        var resultado = favoritoService.obtenerSenales(username);
+
+        assertEquals(3, resultado.getTotalFavoritos());
+        assertEquals("Track", resultado.getListas().get(0).getNombre());
+        assertEquals(2, resultado.getListas().get(0).getTotal());
+        assertEquals("Toyota", resultado.getMarcasPrincipales().get(0).getNombre());
+        assertEquals(2, resultado.getMarcasPrincipales().get(0).getTotal());
+        assertEquals("Sedan", resultado.getCategoriasPrincipales().get(0).getNombre());
+        assertEquals(2, resultado.getCategoriasPrincipales().get(0).getTotal());
+        assertEquals(List.of(20L, 21L, 22L), resultado.getAutoIds());
     }
 
     @Test
