@@ -36,9 +36,19 @@ public class AutoController {
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
+            @RequestParam(required = false) Double precioReferenciaActualMin,
+            @RequestParam(required = false) Double precioReferenciaActualMax,
+            @RequestParam(required = false) Double precioSalidaEstimadoMin,
+            @RequestParam(required = false) Double precioSalidaEstimadoMax,
             @RequestParam(required = false) Integer anioMin,
             @RequestParam(required = false) Integer anioMax,
+            @RequestParam(required = false) Integer caballosFuerzaMin,
+            @RequestParam(required = false) Integer caballosFuerzaMax,
+            @RequestParam(required = false) Integer velocidadMaximaMin,
+            @RequestParam(required = false) Integer velocidadMaximaMax,
             @RequestParam(required = false) String color,
+            @RequestParam(required = false) String motor,
+            @RequestParam(required = false) String tipoCombustible,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(required = false, defaultValue = "precio") String sortBy,
@@ -50,9 +60,19 @@ public class AutoController {
                 .categoriaId(categoriaId)
                 .precioMin(precioMin)
                 .precioMax(precioMax)
+                .precioReferenciaActualMin(precioReferenciaActualMin)
+                .precioReferenciaActualMax(precioReferenciaActualMax)
+                .precioSalidaEstimadoMin(precioSalidaEstimadoMin)
+                .precioSalidaEstimadoMax(precioSalidaEstimadoMax)
                 .anioMin(anioMin)
                 .anioMax(anioMax)
+                .caballosFuerzaMin(caballosFuerzaMin)
+                .caballosFuerzaMax(caballosFuerzaMax)
+                .velocidadMaximaMin(velocidadMaximaMin)
+                .velocidadMaximaMax(velocidadMaximaMax)
                 .color(color)
+                .motor(motor)
+                .tipoCombustible(tipoCombustible)
                 .page(page)
                 .size(size)
                 .sortBy(sortBy)
